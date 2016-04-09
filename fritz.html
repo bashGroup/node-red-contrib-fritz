@@ -83,10 +83,18 @@
         });
         console.log(action);
         if(action) {
-          $('#node-input-arguments').val(JSON.stringify(action.inArgs));
+          $('#node-input-arguments').val(formatArguments(action.inArgs));
           $('#node-input-arguments').html($('#node-input-arguments').val());
         }
       });
+
+      function formatArguments(arguments) {
+        var example = {};
+        arguments.forEach(function(argument) {
+          example[argument] = "value";
+        });
+        return JSON.stringify(example);
+      }
 
       function scanServices() {
         var current = $('#node-input-service').val();
