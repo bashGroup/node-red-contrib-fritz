@@ -39,7 +39,7 @@
 
 <script type="text/javascript">
   RED.nodes.registerType("fritzbox-in", {
-    category: "function",
+    category: "fritzbox",
     color: "#d08181",
     defaults: {
       device: {type:"fritzbox-config", required: true},
@@ -167,5 +167,34 @@
   <div class="form-tips">
     Use the msg.payload to pass the arguments in the form of. Required arguments are:
     <span id="node-input-arguments"></span>
+  </div>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-calllist", {
+    category: "fritzbox",
+    color: "#d08181",
+    defaults: {
+      device: {type:"fritzbox-config", required: true},
+      name: {value:"", required: false}
+    },
+    inputs:1,
+    outputs:1,
+    icon: "fritz.png",
+    label: function() {
+      return this.name ? this.name : "fritzbox Calllist";
+    }
+  });
+
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-calllist">
+  <div class="form-row">
+    <label for="node-input-device"><i class="fa fa-keyboard-o"></i>Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
+    <input type="text" id="node-input-name" />
   </div>
 </script>

@@ -1,6 +1,8 @@
 var tr064lib = require("tr-064");
 var client = new tr064lib.TR064();
 var util = require("util");
+var http = require("http");
+var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false});
 
 module.exports = function(RED) {
 
@@ -78,4 +80,43 @@ module.exports = function(RED) {
 		});
 	}
 	RED.nodes.registerType("fritzbox-in", FritzboxIn);
+
+	function FritzboxCalllist(n) {
+		RED.nodes.createNode(this,n);
+		var node = this;
+		node.config = RED.nodes.getNode(n.device);
+
+		node.on('input', function(msg) {
+			if(node.config.device) {
+				node.config.device.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList(function(err, result) {
+					if(err) {
+						node.warn(err);
+						return;
+					} else {
+						http.get(result.NewCallListURL, function(result) {
+							var data = "";
+							result.on('data', function(chunk) {
+								data += chunk;
+							});
+							result.on('end', function() {
+								parser.parseString(data, function(err, result) {
+									if(err) {
+										node.error(err);
+										return;
+									} else {
+										msg.payload = result;
+										node.send(msg);
+									}
+								});
+							});
+						});
+					}
+				});
+			} else {
+				node.error("Could not load configuration");
+			}
+		});
+	}
+	RED.nodes.registerType("fritzbox-calllist", FritzboxCalllist);
+
 };
