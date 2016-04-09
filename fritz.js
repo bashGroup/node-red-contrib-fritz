@@ -65,7 +65,9 @@ module.exports = function(RED) {
 
 		node.on('input', function(msg) {
 			if(node.config.device) {
-				node.config.device.services[node.service].actions[node.action](msg.payload, function(err, result) {
+				var service = msg.service ? msg.service : node.service;
+				var action = msg.action ? msg.action : node.action;
+				node.config.device.services[service].actions[action](msg.payload, function(err, result) {
 					if(err) {
 						node.warn(err);
 						return;
