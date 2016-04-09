@@ -1,0 +1,163 @@
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-config", {
+    category: "config",
+    defaults: {
+      name: {value:"", required: false},
+      host: {value:"fritz.box", required: true}
+    },
+    credentials: {
+      username: {type: "text"},
+      password: {type: "password"}
+    },
+    icon: "nmap.png",
+    label: function() {
+      return this.name ? this.name : "fritzbox configuration";
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-config">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-bookmark"></i>Name</label>
+        <input type="text" id="node-config-input-name" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-host"><i class="icon-bookmark"></i>Host</label>
+        <input type="text" id="node-config-input-host" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-username"><i class="icon-bookmark"></i>Username</label>
+        <input type="text" id="node-config-input-username" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-password"><i class="icon-bookmark"></i>Password</label>
+        <input type="password" id="node-config-input-password" />
+    </div>
+</script>
+
+
+
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-in", {
+    category: "function",
+    color: "#d08181",
+    defaults: {
+      device: {type:"fritzbox-config", required: true},
+      name: {value:"", required: false},
+      service: {value:"", required: true},
+      action: {value:"", required: true},
+      arguments: {value:"", required: false}
+    },
+    inputs:1,
+    outputs:1,
+    icon: "fritz.png",
+    label: function() {
+      return this.name ? this.name : "fritzbox";
+    },
+    oneditprepare: function() {
+      var node = this;
+      var actions = [];
+      if(node.service) {
+        $('#node-input-service').append('<option value="' + node.service + '">' + node.service + '</option>').val(node.service);
+      }
+
+      if(node.action) {
+        $('#node-input-action').append('<option value="' + node.action + '">' + node.action + '</option>').val(node.action);
+      }
+
+      if(node.arguments) {
+        $('#node-input-arguments').html(node.arguments);
+      }
+
+      $('#node-input-scandev').click(function() {
+        scanServices();
+      });
+
+      $('#node-input-scansrv').click(function() {
+        scanActions();
+      });
+
+      $('#node-input-action').change(function() {
+        var action = actions.find(function(action) {
+          return action.name === $('#node-input-action').val();
+        });
+        console.log(action);
+        if(action) {
+          $('#node-input-arguments').val(JSON.stringify(action.inArgs));
+          $('#node-input-arguments').html($('#node-input-arguments').val());
+        }
+      });
+
+      function scanServices() {
+        var current = $('#node-input-service').val();
+        $('#node-input-service').find('option').remove();
+        var config = RED.nodes.node($('#node-input-device').val());
+        console.log("Updating services");
+        if(config && config.host) {
+          $.get( 'fritzbox/services', { url: config.host })
+            .done( function(data) {
+              var services = JSON.parse(data);
+              console.log(services);
+              services.forEach(function(service) {
+                $('#node-input-service').append('<option value="' + service + '">' + service + '</option>');
+              });
+              $('#node-input-service').val(current);
+            })
+            .fail(function() {
+              console.log("error");
+            });
+        }
+      }
+
+      function scanActions() {
+        var current = $('#node-input-action').val();
+        $('#node-input-action').find('option').remove();
+        var config = RED.nodes.node($('#node-input-device').val());
+        var service = $('#node-input-service').val();
+        console.log("Updating actions");
+        if(config && config.host && service) {
+          $.get('fritzbox/actions', { url: config.host, service: service })
+            .done( function(data) {
+              actions = JSON.parse(data);
+              console.log(actions);
+              actions.forEach(function(action) {
+                $('#node-input-action').append('<option value="' + action.name + '">' + action.name + '</option>');
+              });
+              $('#node-input-action').val(current);
+            })
+            .fail(function() {
+              console.log("error");
+            });
+        }
+      }
+     }
+  });
+
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-in">
+  <div class="form-row">
+    <label for="node-input-device"><i class="fa fa-keyboard-o"></i>Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-service"><i class="fa fa-tasks"></i>Service</label>
+    <select id="node-input-service" name="node-input-service" style="width: 250px;">
+    </select>
+    <button type="button" id="node-input-scandev" class="btn"><i class="icon-search"></i></button>
+  </div>
+  <div class="form-row">
+    <label for="node-input-action"><i class="fa fa-tasks"></i>Action</label>
+    <select id="node-input-action" name="node-input-action" style="width: 250px;">
+    </select>
+    <button type="button" id="node-input-scansrv" class="btn"><i class="icon-search"></i></button>
+  </div>
+  <div class="form-tips">
+    Use the msg.payload to pass the arguments in the form of. Required arguments are:
+    <span id="node-input-arguments"></span>
+  </div>
+</script>

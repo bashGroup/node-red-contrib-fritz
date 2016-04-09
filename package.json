@@ -1,0 +1,26 @@
+{
+"name" : "node-red-contrib-fritz",
+"version" : "0.0.1",
+"description" : "This node gives access to the fritzbox tr064 api",
+"dependencies": {
+
+},
+"engines":
+{
+	"node": ">=5.0.0"
+},
+"repository" :
+  { "type" : "git"
+  , "url" : "https://github.com/bashgroup/node-red-contrib-fritz.git"
+},
+"license": "MIT",
+"keywords": [ "node-red", "fritzbox", "fritz", "router", "tr064"],
+"node-red" : {
+"nodes": {
+	"fritz": "fritz.js"
+}
+},
+"author": {
+	"name": "Jochen Scheib"
+}
+}
