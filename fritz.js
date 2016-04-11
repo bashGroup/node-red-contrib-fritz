@@ -1,8 +1,9 @@
-var tr064lib = require("tr-064");
+var tr064lib = require("tr-064"),
+		http = require("http"),
+		xml2js = require("xml2js");
+
 var client = new tr064lib.TR064();
-var util = require("util");
-var http = require("http");
-var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false});
+var parser = xml2js.Parser({explicitRoot: false, explicitArray: false});
 
 module.exports = function(RED) {
 
