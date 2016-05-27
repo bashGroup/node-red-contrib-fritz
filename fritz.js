@@ -35,18 +35,34 @@ module.exports = function(RED) {
 		var node = this;
 		node.host = n.host;
 		node.device = null;
+		node.reconnect = n.reconnect;
+		node.timer = null;
 
-		if(node.host) {
+		function connect() {
 			client.initTR064Device(node.host, 49000, function(err, device) {
 				if(err) {
-					node.error("Could not connect to fritzbox");
-					return;
+					if(node.reconnect) {
+						node.warn("Connection failed. Reconnecting in 60sec ...");
+						node.timer = setTimeout(connect, 60000);
+					} else {
+						node.error("Failed to connect. Not reconnecting.");
+					}
 				} else {
 					node.device = device;
 					node.device.login(node.credentials.username, node.credentials.password);
 				}
 			});
 		}
+
+		if(node.host) {
+			connect();
+		}
+
+		node.on("close", function() {
+			if(node.timer) {
+				clearTimeout(node.timer);
+			}
+		});
 
 	}
 	RED.nodes.registerType("fritzbox-config", FritzboxConfig, {
@@ -78,7 +94,7 @@ module.exports = function(RED) {
 					}
 				});
 			} else {
-				node.error("Could not load configuration");
+				node.error("Connection to Fritz!Box is not established. Wait for reconnect or check your configuration!");
 			}
 		});
 	}
