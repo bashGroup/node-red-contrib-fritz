@@ -3,8 +3,7 @@
     category: "config",
     defaults: {
       name: {value:"", required: false},
-      host: {value:"fritz.box", required: true},
-      reconnect: {value: true, required: true}
+      host: {value:"fritz.box", required: true}
     },
     credentials: {
       username: {type: "text"},
@@ -33,10 +32,6 @@
     <div class="form-row">
         <label for="node-config-input-password"><i class="icon-bookmark"></i>Password</label>
         <input type="password" id="node-config-input-password" />
-    </div>
-    <div class="form-row">
-      <label for="node-config-input-reconnect"><i class="fa fa-refresh"></i> Reconnect?</label>
-      <input type="checkbox" id="node-config-input-reconnect" style="display: inline-block; width: auto; vertical-align: top;">
     </div>
 </script>
 

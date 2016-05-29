@@ -1,6 +1,6 @@
 var tr064lib = require("tr-064"),
-		http = require("http"),
-		xml2js = require("xml2js");
+http = require("http"),
+xml2js = require("xml2js");
 
 var client = new tr064lib.TR064();
 var parser = xml2js.Parser({explicitRoot: false, explicitArray: false});
@@ -10,10 +10,10 @@ module.exports = function(RED) {
 	RED.httpAdmin.get('/fritzbox/services', function(req, res, next) {
 		var url = req.query.url;
 		client.initTR064Device(req.query.url, 49000, function (err, device) {
-		    if (!err) {
-					var services = Object.keys(device.services);
-		      res.end(JSON.stringify(services));
-		    }
+			if (!err) {
+				var services = Object.keys(device.services);
+				res.end(JSON.stringify(services));
+			}
 		});
 	});
 
@@ -35,35 +35,24 @@ module.exports = function(RED) {
 		var node = this;
 		node.host = n.host;
 		node.device = null;
-		node.reconnect = n.reconnect;
 		node.timer = null;
 
-		function connect() {
-			client.initTR064Device(node.host, 49000, function(err, device) {
-				if(err) {
-					if(node.reconnect) {
-						node.warn("Connection failed. Reconnecting in 60sec ...");
-						node.timer = setTimeout(connect, 60000);
+		if(!node.host) return;
+
+		node.reinit = function() {
+			if(!node.device) {
+				client.initTR064Device(node.host, 49000, function(err, device) {
+					if(err) {
+						node.error("Initialization of device failed. Check configuration.");
 					} else {
-						node.error("Failed to connect. Not reconnecting.");
+						node.device = device;
+						node.device.login(node.credentials.username, node.credentials.password);
 					}
-				} else {
-					node.device = device;
-					node.device.login(node.credentials.username, node.credentials.password);
-				}
-			});
-		}
-
-		if(node.host) {
-			connect();
-		}
-
-		node.on("close", function() {
-			if(node.timer) {
-				clearTimeout(node.timer);
+				});
 			}
-		});
+		};
 
+		node.reinit();
 	}
 	RED.nodes.registerType("fritzbox-config", FritzboxConfig, {
 		credentials: {
@@ -94,7 +83,8 @@ module.exports = function(RED) {
 					}
 				});
 			} else {
-				node.error("Connection to Fritz!Box is not established. Wait for reconnect or check your configuration!");
+				node.error("Device information invalid. Reinit device...");
+				node.config.reinit();
 			}
 		});
 	}
@@ -132,7 +122,8 @@ module.exports = function(RED) {
 					}
 				});
 			} else {
-				node.error("Could not load configuration");
+				node.error("Device information invalid. Reinit device...");
+				node.config.reinit();
 			}
 		});
 	}
