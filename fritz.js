@@ -93,6 +93,7 @@ module.exports = function(RED) {
 	function FritzboxCalllist(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
+		node.max = n.max;
 		node.config = RED.nodes.getNode(n.device);
 
 		node.on('input', function(msg) {
@@ -102,6 +103,10 @@ module.exports = function(RED) {
 						node.warn(err);
 						return;
 					} else {
+						if(n.max) {
+							result.NewCallListURL += "&max=" + n.max;
+						}
+						node.warn(result.NewCallListURL);
 						http.get(result.NewCallListURL, function(result) {
 							var data = "";
 							result.on('data', function(chunk) {

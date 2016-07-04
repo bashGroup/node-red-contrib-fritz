@@ -176,7 +176,10 @@
     color: "#d08181",
     defaults: {
       device: {type:"fritzbox-config", required: true},
-      name: {value:"", required: false}
+      name: {value:"", required: false},
+      max: {value: "", required: false, validate: function(v) {
+        return ( RED.validators.number()(v) || v === "");
+      } }
     },
     inputs:1,
     outputs:1,
@@ -196,5 +199,9 @@
   <div class="form-row">
     <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
     <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-max"><i class="icon-bookmark"></i>Max results</label>
+    <input type="text" id="node-input-max" />
   </div>
 </script>
