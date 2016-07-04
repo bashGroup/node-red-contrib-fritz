@@ -10,6 +10,11 @@ module.exports = function(RED) {
 
     var client = new net.Socket();
     var connections = {};
+    var timeout;
+    var options = {
+      port: 1012,
+      host: node.config.host,
+    };
 
     node.status({fill:"yellow",shape:"ring",text:"Initialization"});
 
@@ -23,6 +28,7 @@ module.exports = function(RED) {
       } else {
         node.status({fill:"red",shape:"ring",text:"Disconnected"});
       }
+      timeout = setTimeout(client.connect, 30000, options);
     });
 
     client.on('data', function(data) {
@@ -82,14 +88,12 @@ module.exports = function(RED) {
       });
     });
 
-    client.connect({
-      port: 1012,
-      host: node.config.host,
-    });
+    client.connect(options);
 
     node.on('close', function() {
       client.removeAllListeners();
       client.end();
+      if(timeout) clearTimeout(timeout);
     });
 
 
