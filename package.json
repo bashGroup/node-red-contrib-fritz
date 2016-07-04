@@ -18,7 +18,8 @@
 "keywords": [ "node-red", "fritzbox", "fritz", "router", "tr064"],
 "node-red" : {
 "nodes": {
-	"fritz": "fritz.js"
+	"fritz": "fritz.js",
+	"fritzbox-callmonitor": "callmonitor.js"
 }
 },
 "author": {

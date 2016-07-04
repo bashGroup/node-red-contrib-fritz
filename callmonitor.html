@@ -1,0 +1,33 @@
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-callmonitor", {
+    category: "fritzbox",
+    color: "#d08181",
+    defaults: {
+      device: {type:"fritzbox-config", required: true},
+      name: {value:"", required: false},
+      topic: {value:"", required: false}
+    },
+    inputs:0,
+    outputs:1,
+    icon: "fritz.png",
+    label: function() {
+      return this.name ? this.name : "FRITZ!Box Callmonitor";
+    }
+  });
+
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-callmonitor">
+  <div class="form-row">
+    <label for="node-input-device"><i class="fa fa-keyboard-o"></i>Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-topic"><i class="icon-bookmark"></i>Topic</label>
+    <input type="text" id="node-input-topic" />
+  </div>
+</script>
