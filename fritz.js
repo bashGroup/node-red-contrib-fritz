@@ -36,17 +36,38 @@ module.exports = function(RED) {
 		node.host = n.host;
 		node.device = null;
 		node.timer = null;
+		node.state = null;
 
 		if(!node.host) return;
 
+		function updateStatus(status) {
+			node.state = status;
+			switch(status) {
+				case "init":
+					node.emit("status", {fill:"yellow",shape:"ring",text:"Initializing device ..."});
+					break;
+				case "ready":
+					node.emit("status", {fill:"green",shape:"dot",text:"Ready"});
+					break;
+				case "error":
+					node.emit("status", {fill:"red",shape:"ring",text:"Error"});
+					break;
+			}
+		}
+
 		node.reinit = function() {
-			if(!node.device) {
+			if(node.state !== "init") {
+				updateStatus("init");
+				node.log("Initializing device ...");
 				client.initTR064Device(node.host, 49000, function(err, device) {
-					if(err) {
-						node.error("Initialization of device failed. Check configuration.");
+					if(err || !device) {
+						node.error("Initialization of device failed. Check configuration. Error: "+err);
+						updateStatus("error");
 					} else {
+						node.log("Successfully initialzed device.");
 						node.device = device;
 						node.device.login(node.credentials.username, node.credentials.password);
+						updateStatus("ready");
 					}
 				});
 			}
@@ -70,7 +91,7 @@ module.exports = function(RED) {
 		node.config = RED.nodes.getNode(n.device);
 
 		node.on('input', function(msg) {
-			if(node.config.device) {
+			if(node.config.state === "ready" && node.config.device) {
 				var service = msg.service ? msg.service : node.service;
 				var action = msg.action ? msg.action : node.action;
 				node.config.device.services[service].actions[action](msg.payload, function(err, result) {
@@ -83,7 +104,7 @@ module.exports = function(RED) {
 					}
 				});
 			} else {
-				node.error("Device information invalid. Reinit device...");
+				node.error("Device not ready.");
 				node.config.reinit();
 			}
 		});
@@ -97,7 +118,7 @@ module.exports = function(RED) {
 		node.config = RED.nodes.getNode(n.device);
 
 		node.on('input', function(msg) {
-			if(node.config.device) {
+			if(node.config.state === "ready" && node.config.device) {
 				node.config.device.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList(function(err, result) {
 					if(err) {
 						node.warn(err);
@@ -126,7 +147,7 @@ module.exports = function(RED) {
 					}
 				});
 			} else {
-				node.error("Device information invalid. Reinit device...");
+				node.error("Device not ready.");
 				node.config.reinit();
 			}
 		});
