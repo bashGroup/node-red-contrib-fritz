@@ -44,13 +44,13 @@ module.exports = function(RED) {
 			node.state = status;
 			switch(status) {
 				case "init":
-					node.emit("status", {fill:"yellow",shape:"ring",text:"Initializing device ..."});
+					node.emit("statusUpdate", {fill:"yellow",shape:"ring",text:"Initializing device ..."});
 					break;
 				case "ready":
-					node.emit("status", {fill:"green",shape:"dot",text:"Ready"});
+					node.emit("statusUpdate", {fill:"green",shape:"dot",text:"Ready"});
 					break;
 				case "error":
-					node.emit("status", {fill:"red",shape:"ring",text:"Error"});
+					node.emit("statusUpdate", {fill:"red",shape:"ring",text:"Error"});
 					break;
 			}
 		}
@@ -90,6 +90,8 @@ module.exports = function(RED) {
 		node.action = n.action;
 		node.config = RED.nodes.getNode(n.device);
 
+		node.config.on('statusUpdate', node.status);
+
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.device) {
 				var service = msg.service ? msg.service : node.service;
@@ -108,6 +110,10 @@ module.exports = function(RED) {
 				node.config.reinit();
 			}
 		});
+
+		node.on('close', function() {
+			node.config.removeListener('statusUpdate', node.status);
+		});
 	}
 	RED.nodes.registerType("fritzbox-in", FritzboxIn);
 
@@ -116,6 +122,8 @@ module.exports = function(RED) {
 		var node = this;
 		node.max = n.max;
 		node.config = RED.nodes.getNode(n.device);
+
+		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.device) {
@@ -150,6 +158,10 @@ module.exports = function(RED) {
 				node.error("Device not ready.");
 				node.config.reinit();
 			}
+		});
+
+		node.on('close', function() {
+			node.config.removeListener('statusUpdate', node.status);
 		});
 	}
 	RED.nodes.registerType("fritzbox-calllist", FritzboxCalllist);
