@@ -3,7 +3,7 @@
 "version" : "0.0.6",
 "description" : "This node gives access to the fritzbox tr064 api",
 "dependencies": {
-	"tr-064": "0.2.0",
+	"tr-064": "mapero/tr-064#0.2.1",
 	"xml2js": "0.4.16"
 },
 "engines":

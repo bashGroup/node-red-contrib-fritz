@@ -66,7 +66,7 @@ module.exports = function(RED) {
 					} else {
 						node.log("Successfully initialzed device.");
 						node.device = device;
-						node.device.login(node.credentials.username, node.credentials.password);
+						node.device.httplogin(node.credentials.username, node.credentials.password);
 						updateStatus("ready");
 					}
 				});
