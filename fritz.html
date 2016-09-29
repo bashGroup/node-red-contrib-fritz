@@ -44,6 +44,7 @@
     defaults: {
       device: {type:"fritzbox-config", required: true},
       name: {value:"", required: false},
+      provider: {value:"TR064", required: true},
       service: {value:"", required: true},
       action: {value:"", required: true},
       arguments: {value:"", required: false}
@@ -81,7 +82,6 @@
         var action = actions.find(function(action) {
           return action.name === $('#node-input-action').val();
         });
-        console.log(action);
         if(action) {
           $('#node-input-arguments').val(formatArguments(action.inArgs));
           $('#node-input-arguments').html($('#node-input-arguments').val());
@@ -98,44 +98,62 @@
 
       function scanServices() {
         var current = $('#node-input-service').val();
-        $('#node-input-service').find('option').remove();
         var config = RED.nodes.node($('#node-input-device').val());
-        console.log("Updating services");
-        if(config && config.host) {
-          $.get( 'fritzbox/services', { url: config.host })
+        var provider = $('#node-input-provider').val();
+
+
+        RED.notify( "Requesting services from fritzbox.", "info");
+
+        if(config && config.host && provider) {
+          $.get( 'fritzbox/services', { url: config.host, provider: provider })
             .done( function(data) {
+              RED.notify( "Services received.", "info");
               var services = JSON.parse(data);
-              console.log(services);
+
+              //Clear all services
+              $('#node-input-service').find('option').remove();
+
               services.forEach(function(service) {
                 $('#node-input-service').append('<option value="' + service + '">' + service + '</option>');
               });
               $('#node-input-service').val(current);
             })
             .fail(function() {
-              console.log("error");
-            });
+              RED.notify( "Something went wrong. Please retry.", "error");
+            })
+        } else {
+          RED.notify( "Cannot receive services. Please check required informations: host and provider", "warning");
         }
       }
 
       function scanActions() {
         var current = $('#node-input-action').val();
-        $('#node-input-action').find('option').remove();
         var config = RED.nodes.node($('#node-input-device').val());
         var service = $('#node-input-service').val();
+        var provider = $('#node-input-provider').val();
+
+        RED.notify( "Requesting actions from fritzbox.", "info");
+
         console.log("Updating actions");
-        if(config && config.host && service) {
-          $.get('fritzbox/actions', { url: config.host, service: service })
+        if(config && config.host && service && provider) {
+          $.get('fritzbox/actions', { url: config.host, service: service, provider: provider })
             .done( function(data) {
+              RED.notify( "Actions received.", "info");
               actions = JSON.parse(data);
-              console.log(actions);
+
+              //Clear all actions
+              $('#node-input-action').find('option').remove();
+
               actions.forEach(function(action) {
                 $('#node-input-action').append('<option value="' + action.name + '">' + action.name + '</option>');
               });
               $('#node-input-action').val(current);
             })
             .fail(function() {
-              console.log("error");
+              RED.notify( "Something went wrong. Please retry.", "error");
             });
+        } else {
+          RED.notify( "Cannot receive actions. Please check required informations: host, provider and service", "warning");
         }
       }
      }
@@ -151,6 +169,13 @@
   <div class="form-row">
     <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
     <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-provider"><i class="icon-bookmark"></i>Provider</label>
+    <select id="node-input-provider" name="node-input-provider" style="width: 250px;">
+      <option value="TR064">TR064</option>
+      <option value="IGD">IGD</option>
+    </select>
   </div>
   <div class="form-row">
     <label for="node-input-service"><i class="fa fa-tasks"></i>Service</label>

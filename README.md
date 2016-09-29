@@ -19,7 +19,7 @@ npm install -g node-red-contrib-fritz
 You can use the generic node to access every function provided by the development api of your fritzbox. First create a configuration including the hostname (e.g. fritz.box), username (e.g. admin) and password of your fritzbox. If this informations are provided you can use the search button to discover available services. Select the service you want to use. Select the action the same way.
 
 The `msg.payload` of the incoming message will be used as arguments. You have to provide a json object with argument name as key and the value, e.g. `{ "NewEnable" : 1, "NewUrl" : "string" }`. Available arguments will be shown in the the hint after you selected the action.
-You can override the settings if you provide `msg.service` or/and `msg.action`.
+You can override the settings if you provide `msg.provider` ("IGD" or "TR064"), `msg.service` or/and `msg.action`.
 
 ## Contributing
 1. Fork it!

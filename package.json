@@ -1,6 +1,6 @@
 {
 "name" : "node-red-contrib-fritz",
-"version" : "0.0.7",
+"version" : "0.0.8",
 "description" : "This node gives access to the fritzbox tr064 api",
 "dependencies": {
 	"tr-064": "mapero/tr-064#0.2.1",

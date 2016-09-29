@@ -8,33 +8,66 @@ var parser = xml2js.Parser({explicitRoot: false, explicitArray: false});
 module.exports = function(RED) {
 
 	RED.httpAdmin.get('/fritzbox/services', function(req, res, next) {
+		var provider = req.query.provider;
 		var url = req.query.url;
-		client.initTR064Device(req.query.url, 49000, function (err, device) {
-			if (!err) {
-				var services = Object.keys(device.services);
-				res.end(JSON.stringify(services));
-			}
-		});
+		switch(provider) {
+			case "IGD":
+				client.initIGDDevice(req.query.url, 49000, function (err, device) {
+					if (!err) {
+						var services = Object.keys(device.services);
+						res.end(JSON.stringify(services));
+					}
+				});
+				break;
+			case "TR064":
+				client.initTR064Device(req.query.url, 49000, function (err, device) {
+					if (!err) {
+						var services = Object.keys(device.services);
+						res.end(JSON.stringify(services));
+					}
+				});
+				break;
+			default:
+				res.end();
+		}
 	});
 
 	RED.httpAdmin.get('/fritzbox/actions', function(req, res, next) {
 		var url = req.query.url;
+		var provider = req.query.provider;
 		var service = req.query.service;
-		client.initTR064Device(req.query.url, 49000, function (err, device) {
-			if(!err && device.services[service]) {
-				var actions = device.services[service].meta.actionsInfo;
-				res.end(JSON.stringify(actions));
-			} else {
-				res.end(JSON.stringify([]));
+
+		switch(provider) {
+			case "IGD":
+				client.initIGDDevice(req.query.url, 49000, function (err, device) {
+					if(!err && device.services[service]) {
+						var actions = device.services[service].meta.actionsInfo;
+						res.end(JSON.stringify(actions));
+					} else {
+						res.end(JSON.stringify([]));
+					}
+				});
+				break;
+			case "TR064":
+				client.initTR064Device(req.query.url, 49000, function (err, device) {
+					if(!err && device.services[service]) {
+						var actions = device.services[service].meta.actionsInfo;
+						res.end(JSON.stringify(actions));
+					} else {
+						res.end(JSON.stringify([]));
+					}
+				});
+				break;
+			default:
+				res.end();
 			}
-		});
 	});
 
 	function FritzboxConfig(n) {
 		RED.nodes.createNode(this, n);
 		var node = this;
 		node.host = n.host;
-		node.device = null;
+		node.providers = {};
 		node.timer = null;
 		node.state = null;
 
@@ -58,16 +91,26 @@ module.exports = function(RED) {
 		node.reinit = function() {
 			if(node.state !== "init") {
 				updateStatus("init");
-				node.log("Initializing device ...");
-				client.initTR064Device(node.host, 49000, function(err, device) {
-					if(err || !device) {
+				node.log("Initializing tr064 ...");
+				client.initTR064Device(node.host, 49000, function(err, tr064) {
+					if(err || !tr064) {
 						node.error("Initialization of device failed. Check configuration. Error: "+err);
 						updateStatus("error");
 					} else {
-						node.log("Successfully initialzed device.");
-						node.device = device;
-						node.device.httplogin(node.credentials.username, node.credentials.password);
-						updateStatus("ready");
+						node.log("Successfully initialzed tr064 device.");
+						node.providers.TR064 = tr064;
+						node.providers.TR064.httplogin(node.credentials.username, node.credentials.password);
+						client.initIGDDevice(node.host, 49000, function(err, igd) {
+							if(err || !igd) {
+								node.error("Initialization of device failed. Check configuration. Error: "+err);
+								updateStatus("error");
+							} else {
+								node.log("Successfully initialzed igd device.");
+								node.providers.IGD = igd;
+								node.providers.IGD.httplogin(node.credentials.username, node.credentials.password);
+								updateStatus("ready");
+							}
+						});
 					}
 				});
 			}
@@ -86,6 +129,7 @@ module.exports = function(RED) {
 	function FritzboxIn(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
+		node.provider = n.provider;
 		node.service = n.service;
 		node.action = n.action;
 		node.config = RED.nodes.getNode(n.device);
@@ -93,10 +137,12 @@ module.exports = function(RED) {
 		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
-			if(node.config.state === "ready" && node.config.device) {
+			if(node.config.state === "ready" && node.provider) {
+				var provider = msg.provider ? msg.provider : node.provider;
 				var service = msg.service ? msg.service : node.service;
 				var action = msg.action ? msg.action : node.action;
-				node.config.device.services[service].actions[action](msg.payload, function(err, result) {
+
+				node.config.providers[provider].services[service].actions[action](msg.payload, function(err, result) {
 					if(err) {
 						node.warn(err);
 						return;
@@ -126,8 +172,8 @@ module.exports = function(RED) {
 		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
-			if(node.config.state === "ready" && node.config.device) {
-				node.config.device.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList(function(err, result) {
+			if(node.config.state === "ready" && node.config.providers.TR064) {
+				node.config.providers.TR064.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList(function(err, result) {
 					if(err) {
 						node.warn(err);
 						return;
