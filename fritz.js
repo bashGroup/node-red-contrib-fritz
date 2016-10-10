@@ -56,7 +56,9 @@ module.exports = function(RED) {
 		var config = {
 			host: n.host,
 			user: node.credentials.username,
-			password: node.credentials.password
+			password: node.credentials.password,
+			port: n.port,
+			ssl: n.ssl
 		};
 
 		node.fritzbox = new Fritzbox.Fritzbox(config);
@@ -84,7 +86,7 @@ module.exports = function(RED) {
 					node.emit("statusUpdate", {fill:"red",shape:"ring",text:"Error"});
 					break;
 			}
-		}
+		};
 		node.reinit();
 	}
 	RED.nodes.registerType("fritzbox-config", FritzboxConfig, {
@@ -143,7 +145,7 @@ module.exports = function(RED) {
 						if(n.max) {
 							url.NewCallListURL += "&max=" + n.max;
 						}
-						return Promise.promisify(request.get, {multiArgs: true})(url.NewCallListURL);
+						return Promise.promisify(request, {multiArgs: true})({uri: url.NewCallListURL, rejectUnauthorized: false});
 					}).then(function(result) {
 						var body = result[1];
 						return Promise.promisify(parser.parseString)(body);

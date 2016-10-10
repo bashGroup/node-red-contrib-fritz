@@ -3,7 +3,9 @@
     category: "config",
     defaults: {
       name: {value:"", required: false},
-      host: {value:"fritz.box", required: true}
+      host: {value:"fritz.box", required: true},
+      port: {value:49000, required: true},
+      ssl: {value: false, required: true}
     },
     credentials: {
       username: {type: "text"},
@@ -24,6 +26,15 @@
     <div class="form-row">
         <label for="node-config-input-host"><i class="icon-bookmark"></i>Host</label>
         <input type="text" id="node-config-input-host" />
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-port"><i class="icon-bookmark"></i>Port</label>
+        <input type="text" id="node-config-input-port" />
+    </div>
+    <div class="form-row">
+      <label>&nbsp;</label>
+      <input type="checkbox" id="node-config-input-ssl" placeholder="" style="display: inline-block; width: auto; vertical-align: top;">
+      <label for="node-config-input-ssl" style="width: 70%;">Is SSL connection?</label>
     </div>
     <div class="form-row">
         <label for="node-config-input-username"><i class="icon-bookmark"></i>Username</label>
