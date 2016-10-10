@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-fritz",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "This node gives access to the fritzbox tr064 api",
   "dependencies": {
     "fritzbox": "^1.0.0",
