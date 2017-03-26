@@ -16,20 +16,39 @@ module.exports = function(RED) {
       host: node.config.host,
     };
 
+		var reconnect = function() {
+			node.log('Connecting to fritzbox...');
+			if(timeout) clearTimeout(timeout);
+			client.connect(options);
+		};
+
     node.status({fill:"yellow",shape:"ring",text:"Initialization"});
 
     client.on('connect', function() {
+			node.log('Connected to fritzbox');
       node.status({fill:"green",shape:"dot",text:"Connected"});
     });
 
     client.on('close', function(hadError) {
       if(hadError) {
+				node.error("Disconnected with Error");
         node.status({fill:"red",shape:"ring",text:"Disconnected with Error"});
       } else {
+				node.warn("Disconnected");
         node.status({fill:"red",shape:"ring",text:"Disconnected"});
       }
-      timeout = setTimeout(client.connect, 30000, options);
+			node.log("Reconnecting in 30sec");
+      timeout = setTimeout(reconnect, 30000);
     });
+
+		client.on('error', function(e) {
+			node.error(e);
+		});
+
+		client.on('timeout', function() {
+			node.error('Connection to fritzbox timed out');
+			client.end();
+		});
 
     client.on('data', function(data) {
       var raw = data.toString();
@@ -88,7 +107,7 @@ module.exports = function(RED) {
       });
     });
 
-    client.connect(options);
+    reconnect();
 
     node.on('close', function() {
       client.removeAllListeners();
