@@ -5,6 +5,7 @@
   "dependencies": {
     "bluebird": "^3.5.0",
     "fritzbox": "^1.0.0",
+    "google-libphonenumber": "^2.0.18",
     "request": "^2.75.0",
     "xml2js": "0.4.16"
   },
@@ -25,8 +26,9 @@
   ],
   "node-red": {
     "nodes": {
-      "fritz": "fritz.js",
-      "fritzbox-callmonitor": "callmonitor.js"
+      "fritzbox": "fritz.js",
+      "fritzbox-callmonitor": "callmonitor.js",
+      "fritzbox-contact": "contact.js"
     }
   },
   "author": {

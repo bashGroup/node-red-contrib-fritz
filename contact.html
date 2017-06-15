@@ -1,0 +1,84 @@
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-contact", {
+    category: "fritzbox",
+    paletteLabel: "FRITZ!Box Lookup",
+    color: "#2E90DD",
+    defaults: {
+      device: {type:"fritzbox-config", required: true},
+      name: {value:"", required: false},
+      topic: {value:"", required: false},
+      phonebook: {value:"", required: false},
+      ccode: {value:"DE", required: true}
+    },
+    inputs:1,
+    outputs:1,
+    icon: "fritz.png",
+    label: function() {
+      return this.name ? this.name : "FRITZ!Box Lookup";
+    },
+    oneditprepare: function() {
+      var node = this;
+      $.get('fritzbox/phonebook/regioncodes')
+        .done( function(data) {
+          codes = JSON.parse(data);
+
+          $('#node-input-ccode').find('option').remove();
+
+          for(key in codes) {
+            $('#node-input-ccode').append('<option value="' + codes[key] + '">' + codes[key] + '</option>');
+          }
+          $('#node-input-ccode').val(node.ccode);
+        })
+        .fail(function() {
+          RED.notify( "Something went wrong. Please retry.", "error");
+        });
+    }
+  });
+
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-contact">
+  <div class="form-row">
+    <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-topic"><i class="icon-bookmark"></i> Topic</label>
+    <input type="text" id="node-input-topic" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-phonebook"><i class="fa fa-book"></i> Phonebook</label>
+    <input type="text" id="node-input-phonebook" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-ccode"><i class="fa fa-flag"></i> Country</label>
+    <select id="node-input-ccode" name="node-input-ccode" style="width: 250px;">
+    </select>
+  </div>
+</script>
+
+<script type="text/x-red" data-help-name="fritzbox-contact">
+<p>Search for a contact in your phonebook by phone number</p>
+
+<h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">string</span>
+        </dt>
+        <dd> the phonenumber to search for. </dd>
+    </dl>
+
+ <h3>Outputs</h3>
+   <dl class="message-properties">
+       <dt>payload <span class="property-type">json array</span></dt>
+       <dd>the contacts matching the number.</dd>
+   </dl>
+
+<h3>Details</h3>
+    Provide the phonenumber for which you want to do a reverse lookup in your phonebook as <p><code>msg.payload</code>.
+    It will return a JSON Array with all matching contacts.</p>
+</script>
