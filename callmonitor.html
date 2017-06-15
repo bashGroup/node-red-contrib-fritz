@@ -1,7 +1,7 @@
 <script type="text/javascript">
   RED.nodes.registerType("fritzbox-callmonitor", {
     category: "fritzbox",
-    paletteLabel: "call monitor",
+    paletteLabel: "FRITZ!Box Callmonitor",
     color: "#2E90DD",
     defaults: {
       device: {type:"fritzbox-config", required: true},
@@ -20,15 +20,15 @@
 
 <script type="text/x-red" data-template-name="fritzbox-callmonitor">
   <div class="form-row">
-    <label for="node-input-device"><i class="fa fa-keyboard-o"></i>Device</label>
+    <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
     <input type="text" id="node-input-device">
   </div>
   <div class="form-row">
-    <label for="node-input-name"><i class="icon-bookmark"></i>Name</label>
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" />
   </div>
   <div class="form-row">
-    <label for="node-input-topic"><i class="icon-bookmark"></i>Topic</label>
+    <label for="node-input-topic"><i class="icon-bookmark"></i> Topic</label>
     <input type="text" id="node-input-topic" />
   </div>
 </script>
