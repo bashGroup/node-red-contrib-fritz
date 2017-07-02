@@ -1,9 +1,9 @@
 var request = require("request");
 var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false, mergeAttrs: true});
 var Promise = require("bluebird");
- var PNU = require('google-libphonenumber').PhoneNumberUtil;
- var PNF = require('google-libphonenumber').PhoneNumberFormat;
- var phoneUtil = PNU.getInstance();
+var PNU = require('google-libphonenumber').PhoneNumberUtil;
+var PNF = require('google-libphonenumber').PhoneNumberFormat;
+var phoneUtil = PNU.getInstance();
 
 module.exports = function(RED) {
 
@@ -11,13 +11,13 @@ module.exports = function(RED) {
     res.end(JSON.stringify(phoneUtil.getSupportedRegions()));
   });
 
-	function FritzBoxContact(n) {
-		RED.nodes.createNode(this,n);
-		var node = this;
+  function FritzBoxContact(n) {
+    RED.nodes.createNode(this,n);
+    var node = this;
     node.topic = n.topic;
     node.phonebook = n.phonebook || 0;
     node.ccode = n.ccode;
-		node.config = RED.nodes.getNode(n.device);
+    node.config = RED.nodes.getNode(n.device);
 
     var statusupdate = function(status) {
       node.status = status;
@@ -39,7 +39,7 @@ module.exports = function(RED) {
             return Promise.promisify(request, {multiArgs: true})({uri: url.NewPhonebookURL, rejectUnauthorized: false});
           }).then(function(result) {
             var body = result[1];
-						return Promise.promisify(parser.parseString)(body);
+            return Promise.promisify(parser.parseString)(body);
           }).then(function(result) {
             msg.payload = [];
             result.phonebook.contact.forEach(function(contact) {
@@ -70,11 +70,10 @@ module.exports = function(RED) {
     });
 
     node.on('close', function() {
-			node.config.removeListener('statusUpdate', statusupdate);
+      node.config.removeListener('statusUpdate', statusupdate);
     });
 
-
-	}
-	RED.nodes.registerType("fritzbox-contact", FritzBoxContact);
+  }
+  RED.nodes.registerType("fritzbox-contact", FritzBoxContact);
 
 };
