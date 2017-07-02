@@ -67,18 +67,19 @@
 <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>payload
-            <span class="property-type">string</span>
+            <span class="property-type">string / object</span>
         </dt>
-        <dd> the phonenumber to search for. </dd>
+        <dd>Either a phonenumber to search for or the JSON output of the FRITZ!Box Callmonitor.</dd>
     </dl>
 
  <h3>Outputs</h3>
    <dl class="message-properties">
        <dt>payload <span class="property-type">json array</span></dt>
-       <dd>the contacts matching the number.</dd>
+       <dd>The contacts matching the phonenumber or the JSON output of the FRITZ!Box Callmonitor enriched with contacts for caller and callee.</dd>
    </dl>
 
 <h3>Details</h3>
-    Provide the phonenumber for which you want to do a reverse lookup in your phonebook as <p><code>msg.payload</code>.
-    It will return a JSON Array with all matching contacts.</p>
+    <p>Provide the phonenumber for which you want to do a reverse lookup in your phonebook as <code>msg.payload</code>.
+    It will return a JSON Array with all matching contacts. In addition the node can be directly connected to the
+    FRITZ!Box Callmonitor node and will enhance its output with the matching contacts for caller and callee.</p>
 </script>

@@ -25,31 +25,36 @@ module.exports = function(RED) {
 
     node.config.on('statusUpdate', statusupdate);
 
-    node.on('input', function(msg) {
+    var queryphonebook = function(phonenumber) {
       var inNumber;
       try {
-        inNumber = phoneUtil.parse(msg.payload, 'DE');
+        inNumber = phoneUtil.parse(phonenumber, 'DE');
       } catch(e) {
-        node.warn(e);
+        return Promise.resolve([]);
+      }
+      if(!phoneUtil.isValidNumber(inNumber)) {
+        return Promise.resolve([]);
       }
 
-      if(node.config.state === "ready" && node.config.fritzbox && phoneUtil.isValidNumber(inNumber)) {
-        node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID':node.phonebook})
+      return new Promise(function(resolve, reject) {
+        node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
           .then(function(url) {
             return Promise.promisify(request, {multiArgs: true})({uri: url.NewPhonebookURL, rejectUnauthorized: false});
           }).then(function(result) {
             var body = result[1];
             return Promise.promisify(parser.parseString)(body);
           }).then(function(result) {
-            msg.payload = [];
+            var contacts = [];
+
             result.phonebook.contact.forEach(function(contact) {
               var matchNumber = function(number) {
                 try {
                   var numberDE = phoneUtil.parse(number._, node.ccode);
                   if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
-                    msg.payload.push(contact);
+                    contacts.push(contact);
                   }
-                } catch (e) {
+                } catch(e) {
+                  // Ignore invalid formated numbers in the phonebook
                 }
               };
 
@@ -59,10 +64,32 @@ module.exports = function(RED) {
                 matchNumber(contact.telephony.number);
               }
             });
-            node.send(msg);
+            resolve(contacts);
           }).catch(function(error) {
-            node.error(error);
+            node.warn(error);
+            resolve([]);
           });
+      });
+    };
+
+    node.on('input', function(msg) {
+      if(node.config.state === "ready" && node.config.fritzbox) {
+        if(msg.payload !== null && typeof msg.payload === 'object') {
+          var caller = queryphonebook(msg.payload.caller).then(function(contacts) {
+            msg.payload.caller_contacts = contacts;
+          });
+          var callee = queryphonebook(msg.payload.callee).then(function(contacts) {
+            msg.payload.callee_contacts = contacts;
+          });
+          Promise.all([caller, callee]).then(function() {
+            node.send(msg);
+          });
+        } else {
+          queryphonebook(msg.payload).then(function(contacts) {
+            msg.payload = contacts;
+            node.send(msg);
+          });
+        }
       } else {
         node.error("Device not ready.");
         node.config.reinit();
@@ -75,5 +102,4 @@ module.exports = function(RED) {
 
   }
   RED.nodes.registerType("fritzbox-contact", FritzBoxContact);
-
 };
