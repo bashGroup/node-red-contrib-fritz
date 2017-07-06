@@ -1,0 +1,59 @@
+[
+    {
+        "id": "f80158f1.d27ab8",
+        "type": "inject",
+        "z": "5517edea.ed19e4",
+        "name": "{\" NewMacAddress\": \"20:82:C0:26:86:FE\" }",
+        "topic": "",
+        "payload": "{\"NewMACAddress\": \"20:82:C0:26:86:FE\" }",
+        "payloadType": "json",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "x": 260,
+        "y": 100,
+        "wires": [
+            [
+                "7b27936b.08bc8c"
+            ]
+        ]
+    },
+    {
+        "id": "7b27936b.08bc8c",
+        "type": "fritzbox-in",
+        "z": "5517edea.ed19e4",
+        "device": "28b24ff3.2b8f1",
+        "name": "",
+        "service": "urn:dslforum-org:service:Hosts:1",
+        "action": "GetSpecificHostEntry",
+        "arguments": "{\"NewMACAddress\":\"value\"}",
+        "x": 510,
+        "y": 100,
+        "wires": [
+            [
+                "12274598.0e46da"
+            ]
+        ]
+    },
+    {
+        "id": "12274598.0e46da",
+        "type": "debug",
+        "z": "5517edea.ed19e4",
+        "name": "",
+        "active": true,
+        "console": "false",
+        "complete": "false",
+        "x": 670,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "28b24ff3.2b8f1",
+        "type": "fritzbox-config",
+        "z": "5517edea.ed19e4",
+        "name": "",
+        "host": "192.168.80.1",
+        "port": "49000",
+        "ssl": false
+    }
+]

@@ -21,6 +21,24 @@ You can use the generic node to access every function provided by the developmen
 The `msg.payload` of the incoming message will be used as arguments. You have to provide a json object with argument name as key and the value, e.g. `{ "NewEnable" : 1, "NewUrl" : "string" }`. Available arguments will be shown in the the hint after you selected the action.
 You can override the settings if you provide `msg.provider` ("IGD" or "TR064"), `msg.service` or/and `msg.action`.
 
+## Examples
+
+### Presence Detection
+
+![Presence](/examples/presence.png)
+
+```json
+[{"id":"f80158f1.d27ab8","type":"inject","z":"5517edea.ed19e4","name":"20:82:C0:26:86:FE","topic":"","payload":"{\"NewMACAddress\": \"20:82:C0:26:86:FE\" }","payloadType":"json","repeat":"","crontab":"","once":false,"x":350,"y":140,"wires":[["7b27936b.08bc8c"]]},{"id":"7b27936b.08bc8c","type":"fritzbox-in","z":"5517edea.ed19e4","device":"28b24ff3.2b8f1","name":"","service":"urn:dslforum-org:service:Hosts:1","action":"GetSpecificHostEntry","arguments":"{\"NewMACAddress\":\"value\"}","x":530,"y":140,"wires":[["12274598.0e46da"]]},{"id":"12274598.0e46da","type":"debug","z":"5517edea.ed19e4","name":"","active":true,"console":"false","complete":"false","x":690,"y":140,"wires":[]},{"id":"28b24ff3.2b8f1","type":"fritzbox-config","z":"","name":"","host":"192.168.80.1","port":"49000","ssl":false}]
+```
+
+### Callmonitor
+
+![Callmonitor](/examples/callmonitor.png)
+
+```json
+[{"id":"49ea9337.0f9fdc","type":"fritzbox-callmonitor","z":"8d4a73b4.140f","device":"28b24ff3.2b8f1","name":"","topic":"","x":240,"y":100,"wires":[["635c2f29.f18ad"]]},{"id":"635c2f29.f18ad","type":"fritzbox-contact","z":"8d4a73b4.140f","device":"28b24ff3.2b8f1","name":"","topic":"","phonebook":"0","ccode":"DE","x":450,"y":100,"wires":[["6a4a06bc.f70b48"]]},{"id":"6a4a06bc.f70b48","type":"debug","z":"8d4a73b4.140f","name":"","active":true,"console":"false","complete":"false","x":630,"y":100,"wires":[]},{"id":"28b24ff3.2b8f1","type":"fritzbox-config","z":"","name":"","host":"192.168.80.1","port":"49000","ssl":false}]
+```
+
 ## Contributing
 1. Fork it!
 2. Create your feature branch: `git checkout -b my-new-feature`
