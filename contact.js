@@ -26,17 +26,17 @@ module.exports = function(RED) {
     node.config.on('statusUpdate', statusupdate);
 
     var queryphonebook = function(phonenumber) {
-      var inNumber;
-      try {
-        inNumber = phoneUtil.parse(phonenumber, 'DE');
-      } catch(e) {
-        return Promise.resolve([]);
-      }
-      if(!phoneUtil.isValidNumber(inNumber)) {
-        return Promise.resolve([]);
-      }
-
       return new Promise(function(resolve, reject) {
+        var inNumber;
+        try {
+          inNumber = phoneUtil.parse(phonenumber, 'DE');
+        } catch(e) {
+          resolve([]);
+        }
+        if(!phoneUtil.isValidNumber(inNumber)) {
+          resolve([]);
+        }
+
         node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
           .then(function(url) {
             return Promise.promisify(request, {multiArgs: true})({uri: url.NewPhonebookURL, rejectUnauthorized: false});
@@ -66,15 +66,18 @@ module.exports = function(RED) {
             });
             resolve(contacts);
           }).catch(function(error) {
-            node.warn(error);
-            resolve([]);
+            reject(error);
           });
       });
     };
 
     node.on('input', function(msg) {
       if(node.config.state === "ready" && node.config.fritzbox) {
-        if(msg.payload !== null && typeof msg.payload === 'object') {
+        if(msg.payload !== null &&
+              typeof msg.payload === 'object' &&
+              !Array.isArray(msg.payload) &&
+              msg.payload.callee !== undefined &&
+              msg.payload.caller !== undefined ) {
           var caller = queryphonebook(msg.payload.caller).then(function(contacts) {
             msg.payload.caller_contacts = contacts;
           });
@@ -83,12 +86,22 @@ module.exports = function(RED) {
           });
           Promise.all([caller, callee]).then(function() {
             node.send(msg);
+          }).catch(function(e) {
+            node.warn(e);
+            node.send(msg);
           });
-        } else {
+        } else if (msg.payload !== null && typeof msg.payload === 'string') {
           queryphonebook(msg.payload).then(function(contacts) {
             msg.payload = contacts;
             node.send(msg);
+          }).catch(function(e) {
+            node.warn(e);
+            msg.payload = [];
+            node.send(msg);
           });
+        } else {
+          node.warn("Invalid input");
+          node.send(msg);
         }
       } else {
         node.error("Device not ready.");
