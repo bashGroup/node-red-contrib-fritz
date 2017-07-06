@@ -1,0 +1,8 @@
+language: node_js
+deploy:
+  provider: npm
+  email: "webmaster@mapero.de"
+  api_key:
+    secure: "Qf52BAHkMoYdub7CUx3wC0gSoQO/4ZuidSWVDiWCxVdYjsAu6t+UOG4+Ctlq7YLXYoIsthD0X/QEsmZFrRdfUWMkHOVfxR32tdeJKpI4l/4Lrwy4YOddUBGbXu0yEHDInX47esCRM9cT+CQxMiksgNlNLcShBquY0dcLFENBzbIXGgXm1zuFQQVXzYybZGXk3DaCPzwy0a8jezLq6Nx0SbWyV7yaEqo2h7hsiEmRr2Lff0LiIeVwUnKxRz8Xq1ZL7zIUSQFShGwCaBTNU5mBabWcgfSaloQWJX8ziLHm7iTgpKUM8+xlD8eHYQ3Byf4Q3u9I8XI1NZ7bUZ13/cpzd2BBWku5Osz+RmO3fleC/+mJrzuf2CKmsrFQCd0gwY61nSeph6VdvCKEjJEnm6uOuHb7mpKm98cY7oS9UWUwK/nJb7k717y32UWesSmn+Wu7/UrGq6iN3+V/wPZ1co+EDF2u8oSuwmCA74j53Xgd1dO8SHeVtR01uQE7GhgEyGf4Zd6mMeEk7q4ElVrDM7qizVzYCZH7Ynd8fKiZrHTk9t/B+Ierob8YmuHid7rkOMAWAKYV/WcRYKoAN7ynlHzMoYY2cDP1+bg2MPqQYY8w0DKUKBXiTw1zTVi67YrsyD7T18qIu07c3/a966vpP/d9xKjyqahOCY03tG+D7TGSveE="
+  on:
+    tags: true
