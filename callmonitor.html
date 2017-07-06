@@ -32,3 +32,35 @@
     <input type="text" id="node-input-topic" />
   </div>
 </script>
+
+<script type="text/x-red" data-help-name="fritzbox-callmonitor">
+<p>Get notified about incoming/outgoing/missed calls.</p>
+
+<h3>Outputs</h3>
+<dl class="message-properties">
+  <dt>payload.type
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Event type: INBOUND/MISSED, OUTBOUND/UNREACHED, CONNECT/DISCONNECT</dd>
+  <dt>payload.caller
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Number of the caller.</dd>
+  <dt>payload.callee
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Number of the callee.</dd>
+  <dt>payload.extension
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Extension for the call. (Only for outgoing calls.)</dd>
+  <dt>payload.id
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Call id</dd>
+  <dt>payload.timestamp
+    <span class="property-type">string</span>
+  </dt>
+  <dd>Timestamp of the event</dd>
+</dl>
+</script>

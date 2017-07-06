@@ -1,9 +1,9 @@
 var request = require("request");
 var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false, mergeAttrs: true});
 var Promise = require("bluebird");
- var PNU = require('google-libphonenumber').PhoneNumberUtil;
- var PNF = require('google-libphonenumber').PhoneNumberFormat;
- var phoneUtil = PNU.getInstance();
+var PNU = require('google-libphonenumber').PhoneNumberUtil;
+var PNF = require('google-libphonenumber').PhoneNumberFormat;
+var phoneUtil = PNU.getInstance();
 
 module.exports = function(RED) {
 
@@ -11,13 +11,13 @@ module.exports = function(RED) {
     res.end(JSON.stringify(phoneUtil.getSupportedRegions()));
   });
 
-	function FritzBoxContact(n) {
-		RED.nodes.createNode(this,n);
-		var node = this;
+  function FritzBoxContact(n) {
+    RED.nodes.createNode(this,n);
+    var node = this;
     node.topic = n.topic;
     node.phonebook = n.phonebook || 0;
     node.ccode = n.ccode;
-		node.config = RED.nodes.getNode(n.device);
+    node.config = RED.nodes.getNode(n.device);
 
     var statusupdate = function(status) {
       node.status = status;
@@ -25,31 +25,36 @@ module.exports = function(RED) {
 
     node.config.on('statusUpdate', statusupdate);
 
-    node.on('input', function(msg) {
-      var inNumber;
-      try {
-        inNumber = phoneUtil.parse(msg.payload, 'DE');
-      } catch(e) {
-        node.warn(e);
-      }
+    var queryphonebook = function(phonenumber) {
+      return new Promise(function(resolve, reject) {
+        var inNumber;
+        try {
+          inNumber = phoneUtil.parse(phonenumber, 'DE');
+        } catch(e) {
+          resolve([]);
+        }
+        if(!phoneUtil.isValidNumber(inNumber)) {
+          resolve([]);
+        }
 
-      if(node.config.state === "ready" && node.config.fritzbox && phoneUtil.isValidNumber(inNumber)) {
-        node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID':node.phonebook})
+        node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
           .then(function(url) {
             return Promise.promisify(request, {multiArgs: true})({uri: url.NewPhonebookURL, rejectUnauthorized: false});
           }).then(function(result) {
             var body = result[1];
-						return Promise.promisify(parser.parseString)(body);
+            return Promise.promisify(parser.parseString)(body);
           }).then(function(result) {
-            msg.payload = [];
+            var contacts = [];
+
             result.phonebook.contact.forEach(function(contact) {
               var matchNumber = function(number) {
                 try {
                   var numberDE = phoneUtil.parse(number._, node.ccode);
                   if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
-                    msg.payload.push(contact);
+                    contacts.push(contact);
                   }
-                } catch (e) {
+                } catch(e) {
+                  // Ignore invalid formated numbers in the phonebook
                 }
               };
 
@@ -59,10 +64,45 @@ module.exports = function(RED) {
                 matchNumber(contact.telephony.number);
               }
             });
-            node.send(msg);
+            resolve(contacts);
           }).catch(function(error) {
-            node.error(error);
+            reject(error);
           });
+      });
+    };
+
+    node.on('input', function(msg) {
+      if(node.config.state === "ready" && node.config.fritzbox) {
+        if(msg.payload !== null &&
+              typeof msg.payload === 'object' &&
+              !Array.isArray(msg.payload) &&
+              msg.payload.callee !== undefined &&
+              msg.payload.caller !== undefined ) {
+          var caller = queryphonebook(msg.payload.caller).then(function(contacts) {
+            msg.payload.caller_contacts = contacts;
+          });
+          var callee = queryphonebook(msg.payload.callee).then(function(contacts) {
+            msg.payload.callee_contacts = contacts;
+          });
+          Promise.all([caller, callee]).then(function() {
+            node.send(msg);
+          }).catch(function(e) {
+            node.warn(e);
+            node.send(msg);
+          });
+        } else if (msg.payload !== null && typeof msg.payload === 'string') {
+          queryphonebook(msg.payload).then(function(contacts) {
+            msg.payload = contacts;
+            node.send(msg);
+          }).catch(function(e) {
+            node.warn(e);
+            msg.payload = [];
+            node.send(msg);
+          });
+        } else {
+          node.warn("Invalid input");
+          node.send(msg);
+        }
       } else {
         node.error("Device not ready.");
         node.config.reinit();
@@ -70,11 +110,9 @@ module.exports = function(RED) {
     });
 
     node.on('close', function() {
-			node.config.removeListener('statusUpdate', statusupdate);
+      node.config.removeListener('statusUpdate', statusupdate);
     });
 
-
-	}
-	RED.nodes.registerType("fritzbox-contact", FritzBoxContact);
-
+  }
+  RED.nodes.registerType("fritzbox-contact", FritzBoxContact);
 };
