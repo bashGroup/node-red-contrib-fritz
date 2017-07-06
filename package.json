@@ -22,7 +22,11 @@
     "fritzbox",
     "fritz",
     "router",
-    "tr064"
+    "tr064",
+    "presence",
+    "avm",
+    "callmonitor",
+    "phonebook"
   ],
   "node-red": {
     "nodes": {
