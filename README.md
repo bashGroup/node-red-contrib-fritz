@@ -1,4 +1,10 @@
+[![npm version](https://badge.fury.io/js/node-red-contrib-fritz.svg)](https://badge.fury.io/js/node-red-contrib-fritz)
+[![Build Status](https://travis-ci.org/bashGroup/node-red-contrib-fritz.svg?branch=master)](https://travis-ci.org/bashGroup/node-red-contrib-fritz)
+
+[![NPM](https://nodei.co/npm/node-red-contrib-fritz.png?compact=true)](https://nodei.co/npm/node-red-contrib-fritz/)
+
 # node-red-contrib-fritz
+
 This node for the node-RED application provides easy access to your avm fritzbox. You can read and write the configuration of your fritzbox including the VoIP and Dect configuration.
 
 ## Installation
@@ -45,6 +51,8 @@ You can override the settings if you provide `msg.provider` ("IGD" or "TR064"), 
 3. Commit your changes: `git commit -am 'Add some feature'`
 4. Push to the branch: `git push origin my-new-feature`
 5. Submit a pull request :D
+
+[![NPM](https://mapero.github.io/paypal.png)](https://www.paypal.me/JochenScheib/2)
 
 ## Credits
 Jochen Scheib
