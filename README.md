@@ -27,6 +27,9 @@ You can use the generic node to access every function provided by the developmen
 The `msg.payload` of the incoming message will be used as arguments. You have to provide a json object with argument name as key and the value, e.g. `{ "NewEnable" : 1, "NewUrl" : "string" }`. Available arguments will be shown in the the hint after you selected the action.
 You can override the settings if you provide `msg.provider` ("IGD" or "TR064"), `msg.service` or/and `msg.action`.
 
+Note: To use the callmonitor node, you have to activate the callmonitor service in your FritzBox (Otherwise the node will emit the error `connect ECONNREFUSED`). This can be done by using a telephone which is connected to the FritzBox. Call `#96*5*`to enable the callmonitor service. Use `#96*4*` if you want disable the feature again.
+
+
 ## Examples
 
 ### Presence Detection
@@ -44,6 +47,9 @@ You can override the settings if you provide `msg.provider` ("IGD" or "TR064"), 
 ```json
 [{"id":"49ea9337.0f9fdc","type":"fritzbox-callmonitor","z":"8d4a73b4.140f","device":"28b24ff3.2b8f1","name":"","topic":"","x":240,"y":100,"wires":[["635c2f29.f18ad"]]},{"id":"635c2f29.f18ad","type":"fritzbox-contact","z":"8d4a73b4.140f","device":"28b24ff3.2b8f1","name":"","topic":"","phonebook":"0","ccode":"DE","x":450,"y":100,"wires":[["6a4a06bc.f70b48"]]},{"id":"6a4a06bc.f70b48","type":"debug","z":"8d4a73b4.140f","name":"","active":true,"console":"false","complete":"false","x":630,"y":100,"wires":[]},{"id":"28b24ff3.2b8f1","type":"fritzbox-config","z":"","name":"","host":"192.168.80.1","port":"49000","ssl":false}]
 ```
+
+Note: Don't forget to enable the callmonitor service in your FritzBox. See above for instructions.
+
 
 ## Contributing
 1. Fork it!
