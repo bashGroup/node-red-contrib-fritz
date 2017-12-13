@@ -68,7 +68,7 @@ module.exports = function(RED) {
 				.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
-					node.error("Initialization of device failed. Check configuration. Error: "+error);
+					node.error("Initialization of device failed. Check configuration.", msg);
 					updateStatus("error");
 				});
 		};
@@ -116,10 +116,10 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error(error);
+						node.error('Action failed', msg);
 					});
 			} else {
-				node.error("Device not ready.");
+				node.warn("Device not ready.");
 				node.config.reinit();
 			}
 		});
@@ -153,10 +153,10 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error(error);
+						node.error('Receiving callist failed.', msg);
 					});
 			} else {
-				node.error("Device not ready.");
+				node.warn("Device not ready.");
 				node.config.reinit();
 			}
 		});
