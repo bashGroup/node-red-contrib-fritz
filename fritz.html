@@ -201,7 +201,12 @@
     defaults: {
       device: {type:"fritzbox-config", required: true},
       name: {value:"", required: false},
-      max: {value: "", required: false, validate: function(v) {
+      list: {value:"GetCallList"},
+	  listurl: {value:"NewCallListURL"},
+	  max: {value: "", required: false, validate: function(v) {
+        return ( RED.validators.number()(v) || v === "");
+      } },
+	  maxdays: {value: "", required: false, validate: function(v) {
         return ( RED.validators.number()(v) || v === "");
       } }
     },
@@ -227,5 +232,50 @@
   <div class="form-row">
     <label for="node-input-max"><i class="icon-bookmark"></i>Max results</label>
     <input type="text" id="node-input-max" />
+  </div>
+  <div class="form-row">
+    <label for="node-input-maxdays"><i class="icon-bookmark"></i>Max days</label>
+    <input type="text" id="node-input-maxdays" />
+  </div>
+  <div class="form-row">
+    <input type="hidden" id="node-input-list" />
+  </div>
+</script>
+
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-phonebook", {
+    category: "fritzbox",
+    paletteLabel: "FRITZ!Box Phonebook",
+    color: "#2E90DD",
+    defaults: {
+      device: {type:"fritzbox-config", required: true},
+      name: {value:"", required: false},
+      list: {value:"GetPhonebook"},
+	  listurl: {value:"NewPhonebookURL"}
+    },
+    inputs:1,
+    outputs:1,
+    icon: "fritz.png",
+    label: function() {
+      return this.name ? this.name : "FRITZ!Box Phonebook";
+    }
+  });
+
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-phonebook">
+  <div class="form-row">
+    <label for="node-input-device"><i class="fa fa-server"></i>Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i>Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row">
+    <input type="hidden" id="node-input-list" />
+  </div>
+  <div class="form-tips">
+    Use the msg.payload to pass the arguments in the form of. Required arguments are: &#123;&quot;NewPhonebookID&quot;:&quot;0&quot;&#125; with an ID number, in most cases 0.
   </div>
 </script>

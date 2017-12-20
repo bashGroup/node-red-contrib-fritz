@@ -130,22 +130,30 @@ module.exports = function(RED) {
 	}
 	RED.nodes.registerType("fritzbox-in", FritzboxIn);
 
-	function FritzboxCalllist(n) {
+	function FritzboxList(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
 		node.max = n.max;
+		node.maxdays = n.maxdays;
+		node.list = n.list;
+		node.listurl = n.listurl;
 		node.config = RED.nodes.getNode(n.device);
 
 		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
-				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList()
+				var action = n.list;
+				var urlparam = n.listurl;
+				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](msg.payload)
 					.then(function(url) {
-						if(n.max) {
-							url.NewCallListURL += "&max=" + n.max;
+						if(n.maxdays) {
+							url[urlparam] += "&days=" + n.maxdays;
 						}
-						return Promise.promisify(request, {multiArgs: true})({uri: url.NewCallListURL, rejectUnauthorized: false});
+						if(n.max) {
+							url[urlparam] += "&max=" + n.max;
+						}
+						return Promise.promisify(request, {multiArgs: true})({uri: url[urlparam], rejectUnauthorized: false});
 					}).then(function(result) {
 						var body = result[1];
 						return Promise.promisify(parser.parseString)(body);
@@ -165,6 +173,7 @@ module.exports = function(RED) {
 			node.config.removeListener('statusUpdate', node.status);
 		});
 	}
-	RED.nodes.registerType("fritzbox-calllist", FritzboxCalllist);
+	RED.nodes.registerType("fritzbox-calllist", FritzboxList);
+	RED.nodes.registerType("fritzbox-phonebook", FritzboxList);
 
 };
