@@ -153,7 +153,7 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error('Receiving callist failed.', msg);
+						node.error(`Receiving callist failed. Error: ${error}`, msg);
 					});
 			} else {
 				node.warn("Device not ready.");

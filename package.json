@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-fritz",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "This node gives access to the fritzbox tr064 api",
   "dependencies": {
     "bluebird": "^3.5.0",
