@@ -135,25 +135,45 @@ module.exports = function(RED) {
 		var node = this;
 		node.max = n.max;
 		node.maxdays = n.maxdays;
-		node.list = n.list;
+		node.action = n.action;
 		node.listurl = n.listurl;
+		node.phonebookId = n.id;
 		node.config = RED.nodes.getNode(n.device);
 
 		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
-				var action = n.list;
-				var urlparam = n.listurl;
-				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](msg.payload)
-					.then(function(url) {
+				var args = {};
+				var action = n.action;
+				var query = "";
+				var urlkey = n.listurl;
+
+				switch (action) {
+					case "GetCallList":
 						if(n.maxdays) {
-							url[urlparam] += "&days=" + n.maxdays;
+							query += "&days=" + n.maxdays;
 						}
 						if(n.max) {
-							url[urlparam] += "&max=" + n.max;
+							query += "&max=" + n.max;
 						}
-						return Promise.promisify(request, {multiArgs: true})({uri: url[urlparam], rejectUnauthorized: false});
+					break;
+					case "GetPhonebook":
+						if (typeof msg.payload === "object" && msg.payload.NewPhonebookID) {
+							args = msg.payload;
+						} else {
+							args = {
+								NewPhonebookID: node.phonebookId ? node.phonebookId : 0
+							}
+						}
+					break;
+				}
+				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](args)
+					.then(function(response) {
+						var url = response[urlkey];
+						url += query;
+						node.error(url);
+						return Promise.promisify(request, {multiArgs: true})({uri: url, rejectUnauthorized: false});
 					}).then(function(result) {
 						var body = result[1];
 						return Promise.promisify(parser.parseString)(body);
@@ -161,7 +181,7 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error(`Receiving callist failed. Error: ${error}`, msg);
+						node.error(`Receiving Calllist / Phonebook failed. Error: ${error}`, msg);
 					});
 			} else {
 				node.warn("Device not ready.");

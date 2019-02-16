@@ -245,7 +245,7 @@
         value: "",
         required: false
       },
-      list: {
+      action: {
         value: "GetCallList"
       },
       listurl: {
@@ -293,7 +293,7 @@
     <input type="text" id="node-input-maxdays" />
   </div>
   <div class="form-row">
-    <input type="hidden" id="node-input-list" />
+    <input type="hidden" id="node-input-action" />
   </div>
 </script>
 
@@ -311,7 +311,14 @@
         value: "",
         required: false
       },
-      list: {
+      id: {
+        value: "0",
+        required: false,
+        validate: function (v) {
+          return (RED.validators.number()(v) || v === "");
+        }
+      },
+      action: {
         value: "GetPhonebook"
       },
       listurl: {
@@ -337,7 +344,11 @@
     <input type="text" id="node-input-name" />
   </div>
   <div class="form-row">
-    <input type="hidden" id="node-input-list" />
+    <label for="node-input-id"><i class="fa fa-tag"></i>Phonebook Id</label>
+    <input type="text" id="node-input-id" />
+  </div>
+  <div class="form-row">
+    <input type="hidden" id="node-input-action" />
   </div>
   <div class="form-tips">
     Use the msg.payload to pass the arguments in the form of. Required arguments are: &#123;&quot;NewPhonebookID&quot;:&quot;0&quot;&#125; with an ID number, in most cases 0.
