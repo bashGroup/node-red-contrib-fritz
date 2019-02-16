@@ -172,7 +172,6 @@ module.exports = function(RED) {
 					.then(function(response) {
 						var url = response[urlkey];
 						url += query;
-						node.error(url);
 						return Promise.promisify(request, {multiArgs: true})({uri: url, rejectUnauthorized: false});
 					}).then(function(result) {
 						var body = result[1];
