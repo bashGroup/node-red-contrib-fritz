@@ -130,22 +130,50 @@ module.exports = function(RED) {
 	}
 	RED.nodes.registerType("fritzbox-in", FritzboxIn);
 
-	function FritzboxCalllist(n) {
+	function FritzboxList(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;
 		node.max = n.max;
+		node.maxdays = n.maxdays;
+		node.action = n.action;
+		node.listurl = n.listurl;
+		node.phonebookId = n.id;
 		node.config = RED.nodes.getNode(n.device);
 
 		node.config.on('statusUpdate', node.status);
 
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
-				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetCallList()
-					.then(function(url) {
-						if(n.max) {
-							url.NewCallListURL += "&max=" + n.max;
+				var args = {};
+				var action = n.action;
+				var query = "";
+				var urlkey = n.listurl;
+
+				switch (action) {
+					case "GetCallList":
+						if(n.maxdays) {
+							query += "&days=" + n.maxdays;
 						}
-						return Promise.promisify(request, {multiArgs: true})({uri: url.NewCallListURL, rejectUnauthorized: false});
+						if(n.max) {
+							query += "&max=" + n.max;
+						}
+					break;
+					case "GetPhonebook":
+						if (typeof msg.payload === "object" && msg.payload.NewPhonebookID) {
+							args = msg.payload;
+						} else {
+							args = {
+								NewPhonebookID: node.phonebookId ? node.phonebookId : 0
+							}
+						}
+					break;
+				}
+				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](args)
+					.then(function(response) {
+						var url = response[urlkey];
+						url += query;
+						node.error(url);
+						return Promise.promisify(request, {multiArgs: true})({uri: url, rejectUnauthorized: false});
 					}).then(function(result) {
 						var body = result[1];
 						return Promise.promisify(parser.parseString)(body);
@@ -153,7 +181,7 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error(`Receiving callist failed. Error: ${error}`, msg);
+						node.error(`Receiving Calllist / Phonebook failed. Error: ${error}`, msg);
 					});
 			} else {
 				node.warn("Device not ready.");
@@ -165,6 +193,7 @@ module.exports = function(RED) {
 			node.config.removeListener('statusUpdate', node.status);
 		});
 	}
-	RED.nodes.registerType("fritzbox-calllist", FritzboxCalllist);
+	RED.nodes.registerType("fritzbox-calllist", FritzboxList);
+	RED.nodes.registerType("fritzbox-phonebook", FritzboxList);
 
 };
