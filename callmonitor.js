@@ -116,8 +116,11 @@ module.exports = function(RED) {
     reconnect();
 
     node.on('close', function() {
-      client.removeAllListeners();
-      client.end();
+      client.setKeepAlive(false, 118000);
+      client.end(function() {
+        client.removeAllListeners();
+        node.log('Disconnected from fritzbox');
+      });
       if(timeout) clearTimeout(timeout);
     });
 
