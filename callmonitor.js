@@ -51,44 +51,45 @@ module.exports = function(RED) {
 		});
 
     client.on('data', function(data) {
-      var raw = data.toString();
-      var array = raw.split(";");
-      var type = array[1];
-      var id = array[2];
-      var timestamp = array[0];
-      var message;
+      const raw = data.toString();
+      const array = raw.split(";");
+      const type = array[1];
+      const id = array[2];
+      const timestamp = array[0];
+      let message;
+
+      if (connections[id] !== undefined) {
+        message = connections[id]
+      } else {
+        message = {}
+      }
 
       switch(type) {
         case "CALL":
-          message = {
-            type: "OUTBOUND",
-            id: id,
-            timestamp: timestamp,
-            caller: array[4],
-            callee: array[5],
-            extension: array[3]
-          };
+          message.type = "OUTBOUND";
+          message.id = id;
+          message.timestamp = timestamp;
+          message.caller = array[4];
+          message.callee = array[5];
+          message.extension = array[3];
           connections[id] = message;
           break;
         case "RING":
-          message = {
-            type: "INBOUND",
-            id: id,
-            timestamp: timestamp,
-            caller: array[3],
-            callee: array[4]
-          };
+          message.type = "INBOUND";
+          message.id = id;
+          message.timestamp = timestamp;
+          message.caller = array[3];
+          message.callee = array[4];
           connections[id] = message;
           break;
         case "CONNECT":
-          message = connections[id];
           message.type = "CONNECT";
+          message.id = id;
+          message.timestamp = timestamp;
           message.extension = array[3];
           connections[id] = message;
           break;
         case "DISCONNECT":
-          message = connections[id];
-          delete connections[id];
           switch(message.type) {
             case "INBOUND":
               message.type = "MISSED";
@@ -98,7 +99,11 @@ module.exports = function(RED) {
               break;
             case "OUTBOUND":
               message.type = "UNREACHED";
+              break;
           }
+          message.id = id;
+          message.timestamp = timestamp;
+          delete connections[id];
           break;
       }
       node.send({
