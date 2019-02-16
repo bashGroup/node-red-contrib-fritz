@@ -9,7 +9,7 @@ module.exports = function(RED) {
 		node.config = RED.nodes.getNode(n.device);
 
     var client = new net.Socket();
-		client.setKeepAlive(true, 118000);
+    client.setKeepAlive(true, 118000);
     var connections = {};
     var timeout;
     var options = {
