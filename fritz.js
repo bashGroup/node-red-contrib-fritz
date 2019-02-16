@@ -68,7 +68,7 @@ module.exports = function(RED) {
 				.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
-					node.error("Initialization of device failed. Check configuration.", msg);
+					node.error(`Initialization of device failed ${error}. Check configuration.`, msg);
 					updateStatus("error");
 				});
 		};
@@ -116,7 +116,7 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error('Action failed', msg);
+						node.error(`Action failed with error: ${error}`, msg);
 					});
 			} else {
 				node.warn("Device not ready.");
@@ -161,7 +161,7 @@ module.exports = function(RED) {
 						msg.payload = result;
 						node.send(msg);
 					}).catch(function(error) {
-						node.error('Receiving callist failed.', msg);
+						node.error(`Receiving callist failed. Error: ${error}`, msg);
 					});
 			} else {
 				node.warn("Device not ready.");
