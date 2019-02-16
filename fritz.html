@@ -2,23 +2,39 @@
   RED.nodes.registerType("fritzbox-config", {
     category: "config",
     defaults: {
-      name: {value:"", required: false},
-      host: {value:"fritz.box", required: true},
-      port: {value:49000, required: true},
-      ssl: {value: false, required: true}
+      name: {
+        value: "",
+        required: false
+      },
+      host: {
+        value: "fritz.box",
+        required: true
+      },
+      port: {
+        value: 49000,
+        required: true
+      },
+      ssl: {
+        value: false,
+        required: true
+      }
     },
     credentials: {
-      username: {type: "text"},
-      password: {type: "password"}
+      username: {
+        type: "text"
+      },
+      password: {
+        type: "password"
+      }
     },
-    label: function() {
+    label: function () {
       return this.name ? this.name : "FRITZ!Box";
     }
   });
 </script>
 
 <script type="text/x-red" data-template-name="fritzbox-config">
-    <div class="form-row">
+  <div class="form-row">
         <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-config-input-name"/>
     </div>
@@ -50,45 +66,62 @@
     paletteLabel: "FRITZ!Box",
     color: "#2E90DD",
     defaults: {
-      device: {type:"fritzbox-config", required: true},
-      name: {value:"", required: false},
-      service: {value:"", required: true},
-      action: {value:"", required: true},
-      arguments: {value:"", required: false}
+      device: {
+        type: "fritzbox-config",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      service: {
+        value: "",
+        required: true
+      },
+      action: {
+        value: "",
+        required: true
+      },
+      arguments: {
+        value: "",
+        required: false
+      }
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: "fritz.png",
-    label: function() {
+    label: function () {
       return this.name ? this.name : "FRITZ!Box";
     },
-    oneditprepare: function() {
+    oneditprepare: function () {
       var node = this;
       var actions = [];
-      if(node.service) {
-        $('#node-input-service').append('<option value="' + node.service + '">' + node.service + '</option>').val(node.service);
+      if (node.service) {
+        $('#node-input-service').append('<option value="' + node.service + '">' + node.service + '</option>').val(
+          node.service);
       }
 
-      if(node.action) {
-        $('#node-input-action').append('<option value="' + node.action + '">' + node.action + '</option>').val(node.action);
+      if (node.action) {
+        $('#node-input-action').append('<option value="' + node.action + '">' + node.action + '</option>').val(
+          node.action);
       }
 
-      if(node.arguments) {
+      if (node.arguments) {
         $('#node-input-arguments').html(node.arguments);
       }
 
-      $('#node-input-scandev').click(function() {
+      $('#node-input-scandev').click(function () {
         scanServices();
       });
 
-      $('#node-input-scansrv').click(function() {
+      $('#node-input-scansrv').click(function () {
         scanActions();
       });
 
-      $('#node-input-action').change(function() {
+      $('#node-input-action').change(function () {
         var action = actions[$('#node-input-action').val()];
         console.log(action);
-        if(action) {
+        if (action) {
           $('#node-input-arguments').val(formatArguments(action.inArgs));
           $('#node-input-arguments').html($('#node-input-arguments').val());
         }
@@ -96,7 +129,7 @@
 
       function formatArguments(arguments) {
         var example = {};
-        arguments.forEach(function(argument) {
+        arguments.forEach(function (argument) {
           example[argument] = "value";
         });
         return JSON.stringify(example);
@@ -106,27 +139,29 @@
         var current = $('#node-input-service').val();
         var config = RED.nodes.node($('#node-input-device').val());
 
-        RED.notify( "Requesting services from fritzbox.", "info");
+        RED.notify("Requesting services from fritzbox.", "info");
 
-        if(config && config.host) {
-          $.get( 'fritzbox/services', { url: config.host })
-            .done( function(data) {
-              RED.notify( "Services received.", "info");
+        if (config && config.host) {
+          $.get('fritzbox/services', {
+              url: config.host
+            })
+            .done(function (data) {
+              RED.notify("Services received.", "info");
               var services = JSON.parse(data);
 
               //Clear all services
               $('#node-input-service').find('option').remove();
 
-              services.forEach(function(service) {
+              services.forEach(function (service) {
                 $('#node-input-service').append('<option value="' + service + '">' + service + '</option>');
               });
               $('#node-input-service').val(current);
             })
-            .fail(function() {
-              RED.notify( "Something went wrong. Please retry.", "error");
+            .fail(function () {
+              RED.notify("Something went wrong. Please retry.", "error");
             })
         } else {
-          RED.notify( "Cannot receive services. Please check required informations: host and provider", "warning");
+          RED.notify("Cannot receive services. Please check required informations: host and provider", "warning");
         }
       }
 
@@ -135,35 +170,38 @@
         var config = RED.nodes.node($('#node-input-device').val());
         var service = $('#node-input-service').val();
 
-        RED.notify( "Requesting actions from fritzbox.", "info");
+        RED.notify("Requesting actions from fritzbox.", "info");
 
         console.log("Updating actions");
-        if(config && config.host && service) {
-          $.get('fritzbox/actions', { url: config.host, service: service })
-            .done( function(data) {
-              RED.notify( "Actions received.", "info");
+        if (config && config.host && service) {
+          $.get('fritzbox/actions', {
+              url: config.host,
+              service: service
+            })
+            .done(function (data) {
+              RED.notify("Actions received.", "info");
               console.log(data);
               actions = JSON.parse(data);
 
               //Clear all actions
               $('#node-input-action').find('option').remove();
 
-              for(key in actions) {
+              for (key in actions) {
                 $('#node-input-action').append('<option value="' + key + '">' + key + '</option>');
               }
 
               $('#node-input-action').val(current);
             })
-            .fail(function() {
-              RED.notify( "Something went wrong. Please retry.", "error");
+            .fail(function () {
+              RED.notify("Something went wrong. Please retry.", "error");
             });
         } else {
-          RED.notify( "Cannot receive actions. Please check required informations: host, provider and service", "warning");
+          RED.notify("Cannot receive actions. Please check required informations: host, provider and service",
+            "warning");
         }
       }
-     }
+    }
   });
-
 </script>
 
 <script type="text/x-red" data-template-name="fritzbox-in">
@@ -199,25 +237,42 @@
     paletteLabel: "FRITZ!Box Calllist",
     color: "#2E90DD",
     defaults: {
-      device: {type:"fritzbox-config", required: true},
-      name: {value:"", required: false},
-      list: {value:"GetCallList"},
-	  listurl: {value:"NewCallListURL"},
-	  max: {value: "", required: false, validate: function(v) {
-        return ( RED.validators.number()(v) || v === "");
-      } },
-	  maxdays: {value: "", required: false, validate: function(v) {
-        return ( RED.validators.number()(v) || v === "");
-      } }
+      device: {
+        type: "fritzbox-config",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      list: {
+        value: "GetCallList"
+      },
+      listurl: {
+        value: "NewCallListURL"
+      },
+      max: {
+        value: "",
+        required: false,
+        validate: function (v) {
+          return (RED.validators.number()(v) || v === "");
+        }
+      },
+      maxdays: {
+        value: "",
+        required: false,
+        validate: function (v) {
+          return (RED.validators.number()(v) || v === "");
+        }
+      }
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: "fritz.png",
-    label: function() {
+    label: function () {
       return this.name ? this.name : "FRITZ!Box Calllist";
     }
   });
-
 </script>
 
 <script type="text/x-red" data-template-name="fritzbox-calllist">
@@ -248,19 +303,28 @@
     paletteLabel: "FRITZ!Box Phonebook",
     color: "#2E90DD",
     defaults: {
-      device: {type:"fritzbox-config", required: true},
-      name: {value:"", required: false},
-      list: {value:"GetPhonebook"},
-	  listurl: {value:"NewPhonebookURL"}
+      device: {
+        type: "fritzbox-config",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      list: {
+        value: "GetPhonebook"
+      },
+      listurl: {
+        value: "NewPhonebookURL"
+      }
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: "fritz.png",
-    label: function() {
+    label: function () {
       return this.name ? this.name : "FRITZ!Box Phonebook";
     }
   });
-
 </script>
 
 <script type="text/x-red" data-template-name="fritzbox-phonebook">
