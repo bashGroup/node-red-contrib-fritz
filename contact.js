@@ -29,7 +29,7 @@ module.exports = function(RED) {
       return new Promise(function(resolve, reject) {
         var inNumber;
         try {
-          inNumber = phoneUtil.parse(phonenumber, 'DE');
+          inNumber = phoneUtil.parse(phonenumber, node.ccode);
         } catch(e) {
           resolve([]);
         }
