@@ -64,7 +64,7 @@ module.exports = function(RED) {
 		node.fritzbox = new Fritzbox.Fritzbox(config);
 
 		node.reinit = function() {
-			Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
+			Promise.all([node.fritzbox.initIGDDevice(), node.fritzbox.initTR064Device()].map(p => p.catch(error => null)))
 			.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
