@@ -31,9 +31,11 @@ module.exports = function(RED) {
         try {
           inNumber = phoneUtil.parse(phonenumber, node.ccode);
         } catch(e) {
+          node.warn(`The provided number %s is not valid for region %s: %s`, phonenumber, node.ccode, e);
           resolve([]);
         }
         if(!phoneUtil.isValidNumber(inNumber)) {
+          node.warn(`The provided number %s is not valid for region %s: %s`, phonenumber, node.ccode);
           resolve([]);
         }
 
@@ -54,7 +56,7 @@ module.exports = function(RED) {
                     contacts.push(contact);
                   }
                 } catch(e) {
-                  // Ignore invalid formated numbers in the phonebook
+                  node.warn(`The invalid phonebook number %s for region %s will be ignored: %s`, phonenumber, node.ccode, e);
                 }
               };
 
