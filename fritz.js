@@ -68,7 +68,7 @@ module.exports = function(RED) {
 				.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
-					node.error(`Initialization of device failed ${error}. Check configuration.`, msg);
+					node.error(`Initialization of device failed ${error}. Check configuration.`);
 					updateStatus("error");
 				});
 		};
