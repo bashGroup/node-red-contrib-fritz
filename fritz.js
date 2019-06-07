@@ -17,7 +17,7 @@ module.exports = function(RED) {
 
 		var fritzbox = new Fritzbox.Fritzbox(config);
 
-		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()])
+		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
 			.then(function() {
 				var services = Object.keys(fritzbox.services);
 				res.end(JSON.stringify(services));
@@ -35,7 +35,7 @@ module.exports = function(RED) {
 
 		var fritzbox = new Fritzbox.Fritzbox(config);
 
-		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()])
+		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
 			.then(function() {
 				var actions = fritzbox.services[service].actionsInfo;
 				res.end(JSON.stringify(actions));
@@ -64,8 +64,8 @@ module.exports = function(RED) {
 		node.fritzbox = new Fritzbox.Fritzbox(config);
 
 		node.reinit = function() {
-			Promise.all([node.fritzbox.initIGDDevice(), node.fritzbox.initTR064Device()])
-				.then(function() {
+			Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
+			.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
 					node.error(`Initialization of device failed ${error}. Check configuration.`);
