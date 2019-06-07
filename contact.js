@@ -56,7 +56,7 @@ module.exports = function(RED) {
                     contacts.push(contact);
                   }
                 } catch(e) {
-                  node.warn(`The invalid phonebook number ${phonenumber} for region ${node.ccode} will be ignored: ${e}`);
+                  node.warn(`The invalid phonebook number ${number._} for region ${node.ccode} will be ignored: ${e}`);
                 }
               };
 
