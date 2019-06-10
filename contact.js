@@ -49,7 +49,8 @@ module.exports = function(RED) {
             var contacts = [];
 
             result.phonebook.contact.forEach(function(contact) {
-              var matchNumber = function(number) {
+              function matchNumber(number) {
+                if (number._.startsWith('**')) return;
                 try {
                   var numberDE = phoneUtil.parse(number._, node.ccode);
                   if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
