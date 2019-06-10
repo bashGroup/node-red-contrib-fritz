@@ -135,8 +135,8 @@ module.exports = function(RED) {
 		var node = this;
 		node.max = n.max;
 		node.maxdays = n.maxdays;
-		node.action = n.action;
-		node.listurl = n.listurl;
+		node.action = n.action ? n.action : "GetCallList";
+		node.listurl = n.listurl ? n.listurl : "NewCallListURL";
 		node.phonebookId = n.id;
 		node.config = RED.nodes.getNode(n.device);
 
@@ -145,9 +145,9 @@ module.exports = function(RED) {
 		node.on('input', function(msg) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
 				var args = {};
-				var action = n.action;
+				var action = node.action;
 				var query = "";
-				var urlkey = n.listurl;
+				var urlkey = node.listurl;
 
 				switch (action) {
 					case "GetCallList":
