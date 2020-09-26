@@ -110,7 +110,16 @@ module.exports = function(RED) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
 				var service = msg.service ? msg.service : node.service;
 				var action = msg.action ? msg.action : node.action;
-
+					node.error("No action found. Did you select any?")
+					return;
+				}
+				if(node.config.fritzbox.options.ssl && node.config.fritzbox.options.port == 49000){
+					node.warn("SSL option selected with Standard Port 49000. Should be 49443?");
+				}
+				if(node.config.fritzbox.services[service] === undefined){
+					node.error("No Services response received.");
+					return;
+				}
 				node.config.fritzbox.services[service].actions[action](msg.payload)
 					.then(function(result) {
 						msg.payload = result;
