@@ -110,6 +110,7 @@ module.exports = function(RED) {
 			if(node.config.state === "ready" && node.config.fritzbox) {
 				var service = msg.service ? msg.service : node.service;
 				var action = msg.action ? msg.action : node.action;
+				if(action === ""){
 					node.error("No action found. Did you select any?")
 					return;
 				}
