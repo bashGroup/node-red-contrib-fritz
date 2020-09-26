@@ -3,11 +3,11 @@
   "version": "1.3.11",
   "description": "Get full access to all functions of your fritzbox. Including Callmonitor, Presence Detection and much more",
   "dependencies": {
-    "bluebird": "^3.5.0",
+    "bluebird": "^3.7.2",
     "fritzbox": "^1.0.0",
-    "google-libphonenumber": "^3.2.2",
-    "request": "^2.75.0",
-    "xml2js": "0.4.16"
+    "google-libphonenumber": "^3.2.13",
+    "request": "^2.88.2",
+    "xml2js": "^0.4.23"
   },
   "engines": {
     "node": ">=5.0.0"
