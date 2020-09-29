@@ -1,7 +1,15 @@
 var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false, mergeAttrs: true});
 var axios = require('axios')
+https = require('https');
 var PNU = require('google-libphonenumber').PhoneNumberUtil;
 var phoneUtil = PNU.getInstance();
+
+const httpclient = axios.create({
+  httpsAgent: new https.Agent({  
+    rejectUnauthorized: false
+  })
+});
+
 
 module.exports = function(RED) {
 
@@ -39,7 +47,7 @@ module.exports = function(RED) {
 
         node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
           .then(function(url) {
-            return axios.get(url.NewPhonebookURL);
+            return httpclient.get(url.NewPhonebookURL);
           }).then(function(result) {
             return parser.parseStringPromise(result.data)
           }).then(function(result) {

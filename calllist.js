@@ -1,6 +1,13 @@
 var axios = require('axios')
+https = require('https')
 xml2js = require("xml2js");
 var parser = xml2js.Parser({explicitRoot: false, explicitArray: false});
+
+const httpclient = axios.create({
+    httpsAgent: new https.Agent({  
+      rejectUnauthorized: false
+    })
+  });
 
 module.exports = function(RED) {
     function FritzboxList(n) {
@@ -44,7 +51,7 @@ module.exports = function(RED) {
                 node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](args)
                     .then(function(response) {
                         var url = response[urlkey];
-                        return axios.get(url, queryParams)
+                        return httpclient.get(url, queryParams)
                     }).then(function(result) {
                         return parser.parseStringPromise(result.data)
                     }).then(function(result) {
