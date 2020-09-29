@@ -1,11 +1,5 @@
-var Fritzbox = require("fritzbox"),
-http = require("http"),
-xml2js = require("xml2js");
+var Fritzbox = require("fritzbox")
 
-var Promise = require("bluebird");
-var request = require("request");
-
-var parser = xml2js.Parser({explicitRoot: false, explicitArray: false});
 
 module.exports = function(RED) {
 
@@ -42,58 +36,6 @@ module.exports = function(RED) {
 			}).catch(function(error) {
 				res.end();
 			});
-	});
-
-	function FritzboxConfig(n) {
-		RED.nodes.createNode(this, n);
-		var node = this;
-		node.host = n.host;
-		node.timer = null;
-		node.state = null;
-
-		if(!node.host) return;
-
-		var config = {
-			host: n.host,
-			user: node.credentials.username,
-			password: node.credentials.password,
-			port: n.port,
-			ssl: n.ssl
-		};
-
-		node.fritzbox = new Fritzbox.Fritzbox(config);
-
-		node.reinit = function() {
-			Promise.all([node.fritzbox.initIGDDevice(), node.fritzbox.initTR064Device()].map(p => p.catch(error => null)))
-			.then(function() {
-					updateStatus("ready");
-				}).catch(function(error) {
-					node.error(`Initialization of device failed ${error}. Check configuration.`);
-					updateStatus("error");
-				});
-		};
-
-		var updateStatus = function(status) {
-			node.state = status;
-			switch(status) {
-				case "init":
-					node.emit("statusUpdate", {fill:"yellow",shape:"ring",text:"Initializing device ..."});
-					break;
-				case "ready":
-					node.emit("statusUpdate", {fill:"green",shape:"dot",text:"Ready"});
-					break;
-				case "error":
-					node.emit("statusUpdate", {fill:"red",shape:"ring",text:"Error"});
-					break;
-			}
-		};
-		node.reinit();
-	}
-	RED.nodes.registerType("fritzbox-config", FritzboxConfig, {
-		credentials: {
-			username: {type: "text"},
-			password: {type: "password"}
-		}
 	});
 
 
@@ -139,70 +81,4 @@ module.exports = function(RED) {
 		});
 	}
 	RED.nodes.registerType("fritzbox-in", FritzboxIn);
-
-	function FritzboxList(n) {
-		RED.nodes.createNode(this,n);
-		var node = this;
-		node.max = n.max;
-		node.maxdays = n.maxdays;
-		node.action = n.action ? n.action : "GetCallList";
-		node.listurl = n.listurl ? n.listurl : "NewCallListURL";
-		node.phonebookId = n.id;
-		node.config = RED.nodes.getNode(n.device);
-
-		node.config.on('statusUpdate', node.status);
-
-		node.on('input', function(msg) {
-			if(node.config.state === "ready" && node.config.fritzbox) {
-				var args = {};
-				var action = node.action;
-				var query = "";
-				var urlkey = node.listurl;
-
-				switch (action) {
-					case "GetCallList":
-						if(n.maxdays) {
-							query += "&days=" + n.maxdays;
-						}
-						if(n.max) {
-							query += "&max=" + n.max;
-						}
-					break;
-					case "GetPhonebook":
-						if (typeof msg.payload === "object" && msg.payload.NewPhonebookID) {
-							args = msg.payload;
-						} else {
-							args = {
-								NewPhonebookID: node.phonebookId ? node.phonebookId : 0
-							}
-						}
-					break;
-				}
-				node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](args)
-					.then(function(response) {
-						var url = response[urlkey];
-						url += query;
-						return Promise.promisify(request, {multiArgs: true})({uri: url, rejectUnauthorized: false});
-					}).then(function(result) {
-						var body = result[1];
-						return Promise.promisify(parser.parseString)(body);
-					}).then(function(result) {
-						msg.payload = result;
-						node.send(msg);
-					}).catch(function(error) {
-						node.error(`Receiving Calllist / Phonebook failed. Error: ${error}`, msg);
-					});
-			} else {
-				node.warn("Device not ready.");
-				node.config.reinit();
-			}
-		});
-
-		node.on('close', function() {
-			node.config.removeListener('statusUpdate', node.status);
-		});
-	}
-	RED.nodes.registerType("fritzbox-calllist", FritzboxList);
-	RED.nodes.registerType("fritzbox-phonebook", FritzboxList);
-
 };

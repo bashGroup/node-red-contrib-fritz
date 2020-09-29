@@ -1,9 +1,15 @@
-var request = require("request");
 var parser = require("xml2js").Parser({explicitRoot: false, explicitArray: false, mergeAttrs: true});
-var Promise = require("bluebird");
+var axios = require('axios')
+https = require('https');
 var PNU = require('google-libphonenumber').PhoneNumberUtil;
-var PNF = require('google-libphonenumber').PhoneNumberFormat;
 var phoneUtil = PNU.getInstance();
+
+const httpclient = axios.create({
+  httpsAgent: new https.Agent({  
+    rejectUnauthorized: false
+  })
+});
+
 
 module.exports = function(RED) {
 
@@ -41,16 +47,16 @@ module.exports = function(RED) {
 
         node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
           .then(function(url) {
-            return Promise.promisify(request, {multiArgs: true})({uri: url.NewPhonebookURL, rejectUnauthorized: false});
+            return httpclient.get(url.NewPhonebookURL);
           }).then(function(result) {
-            var body = result[1];
-            return Promise.promisify(parser.parseString)(body);
+            return parser.parseStringPromise(result.data)
           }).then(function(result) {
             var contacts = [];
 
             result.phonebook.contact.forEach(function(contact) {
               function matchNumber(number) {
                 if (number._.startsWith('**')) return;
+                if (number._.includes('@')) return;
                 try {
                   var numberDE = phoneUtil.parse(number._, node.ccode);
                   if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
