@@ -1,39 +1,51 @@
 <script type="text/javascript">
-    RED.nodes.registerType("fritzbox-config", {
-      category: "config",
-      defaults: {
-        name: {
-          value: "",
-          required: false
-        },
-        host: {
-          value: "fritz.box",
-          required: true
-        },
-        port: {
-          value: 49000,
-          required: true
-        },
-        ssl: {
-          value: false,
-          required: true
-        }
+  RED.nodes.registerType("fritzbox-config", {
+    category: "config",
+    defaults: {
+      name: {
+        value: "",
+        required: false
       },
-      credentials: {
-        username: {
-          type: "text"
-        },
-        password: {
-          type: "password"
-        }
+      host: {
+        value: "fritz.box",
+        required: true
       },
-      label: function () {
-        return this.name ? this.name : "FRITZ!Box";
+      port: {
+        value: 49000,
+        required: true
+      },
+      ssl: {
+        value: false,
+        required: true
       }
-    });
-  </script>
-  
-  <script type="text/x-red" data-template-name="fritzbox-config">
+    },
+    credentials: {
+      username: {
+        type: "text"
+      },
+      password: {
+        type: "password"
+      }
+    },
+    label: function () {
+      return this.name ? this.name : "FRITZ!Box";
+    },
+    oneditprepare: function () {
+      $('#node-config-input-ssl').change(function () {
+        var ssl = $('#node-config-input-ssl').is(":checked");
+        var port = $('#node-config-input-port').val();
+        if (ssl === true && port === "49000") {
+          $('#node-config-input-port').val("49443");
+        }
+        if (ssl === false && port === "49443") {
+          $('#node-config-input-port').val("49000");
+        }
+      })
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-config">
     <div class="form-row">
           <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
           <input type="text" id="node-config-input-name"/>
@@ -46,7 +58,7 @@
       <div class="form-row">
         <label>&nbsp;</label>
         <input type="checkbox" id="node-config-input-ssl" placeholder="" style="display: inline-block; width: auto; vertical-align: top;">
-        <label for="node-config-input-ssl" style="width: 70%;">Is SSL connection?</label>
+        <label for="node-config-input-ssl" style="width: 70%;">Enable secure connection (SSL/TLS)</label>
       </div>
       <div class="form-row">
           <label for="node-config-input-username"><i class="fa fa-user"></i> Username</label>
@@ -57,4 +69,3 @@
           <input type="password" id="node-config-input-password" />
       </div>
   </script>
-  
