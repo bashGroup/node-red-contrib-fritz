@@ -58,7 +58,6 @@
 
       $('#node-input-action').change(function () {
         var action = actions[$('#node-input-action').val()];
-        console.log(action);
         if (action) {
           $('#node-input-arguments').val(formatArguments(action.inArgs));
           $('#node-input-arguments').html($('#node-input-arguments').val());
@@ -110,7 +109,6 @@
 
         RED.notify("Requesting actions from fritzbox.", "info");
 
-        console.log("Updating actions");
         if (config && config.host && service) {
           $.get('fritzbox/actions', {
               url: config.host,
@@ -118,7 +116,6 @@
             })
             .done(function (data) {
               RED.notify("Actions received.", "info");
-              console.log(data);
               actions = JSON.parse(data);
 
               //Clear all actions
