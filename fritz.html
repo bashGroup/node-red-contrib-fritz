@@ -69,7 +69,7 @@
         arguments.forEach(function (argument) {
           example[argument] = "value";
         });
-        return JSON.stringify(example);
+        return JSON.stringify(example, undefined, 2);
       }
 
       function scanServices() {
@@ -162,7 +162,7 @@
   </div>
   <div class="form-tips">
     Use the msg.payload to pass the arguments in the form of. Required arguments are:
-    <span id="node-input-arguments"></span>
+    <pre id="node-input-arguments"></pre>
   </div>
 </script>
 
