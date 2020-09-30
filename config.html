@@ -17,11 +17,15 @@
       ssl: {
         value: false,
         required: true
+      },
+      user: {
+        required: true,
+        value: "admin"
       }
     },
     credentials: {
       username: {
-        type: "text"
+        type: "text",
       },
       password: {
         type: "password"
@@ -31,6 +35,17 @@
       return this.name ? this.name : "FRITZ!Box";
     },
     oneditprepare: function () {
+      // For backward compatibility
+      if ($('#node-config-input-username').val() !== "") {
+        $('#node-config-input-user').val($('#node-config-input-username').val())
+      }
+      
+
+      $('#node-config-input-user').change(function() {
+        const username = $('#node-config-input-user').val()
+        $('#node-config-input-username').val(username)
+      })
+
       $('#node-config-input-ssl').change(function () {
         var ssl = $('#node-config-input-ssl').is(":checked");
         var port = $('#node-config-input-port').val();
@@ -62,10 +77,12 @@
       </div>
       <div class="form-row">
           <label for="node-config-input-username"><i class="fa fa-user"></i> Username</label>
-          <input type="text" id="node-config-input-username" />
+          <input type="text" id="node-config-input-user" />
+          <input type="hidden" id="node-config-input-username"/>
       </div>
       <div class="form-row">
           <label for="node-config-input-password"><i class="fa fa-key"></i> Password</label>
           <input type="password" id="node-config-input-password" />
       </div>
+      <div class="form-tips"><span>Hint: If you have set your fritzbox to login with "password only" you have to choose a random username that does not exist on the fritzbox, e.g. "admin" or "doesnotexist".</span></div>
   </script>
