@@ -38,11 +38,5 @@
   },
   "author": {
     "name": "Jochen Scheib"
-  },
-  "scripts": {
-    "debug": "node --nolazy --inspect-brk=9229 node_modules/node-red/red.js -v"
-  },
-  "devDependencies": {
-    "node-red": "^1.1.3"
   }
 }
