@@ -51,7 +51,7 @@ module.exports = function(RED) {
                 node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions[action](args)
                     .then(function(response) {
                         var url = response[urlkey];
-                        return httpclient.get(url, queryParams)
+                        return httpclient.get(url, {params: queryParams})
                     }).then(function(result) {
                         return parser.parseStringPromise(result.data)
                     }).then(function(result) {
