@@ -91,6 +91,7 @@ module.exports = function(RED) {
           connections[id] = message;
           break;
         case "DISCONNECT":
+          message.duration = array[3];
           switch(message.type) {
             case "INBOUND":
               message.type = "MISSED";
