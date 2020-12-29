@@ -104,6 +104,7 @@ module.exports = function(RED) {
           }
           message.id = id;
           message.timestamp = timestamp;
+          message.duration = array[3];
           delete connections[id];
           break;
       }
