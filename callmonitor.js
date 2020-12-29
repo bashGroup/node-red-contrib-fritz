@@ -91,7 +91,6 @@ module.exports = function(RED) {
           connections[id] = message;
           break;
         case "DISCONNECT":
-          message.duration = array[3];
           switch(message.type) {
             case "INBOUND":
               message.type = "MISSED";
@@ -105,6 +104,7 @@ module.exports = function(RED) {
           }
           message.id = id;
           message.timestamp = timestamp;
+          message.duration = array[3];
           delete connections[id];
           break;
       }
