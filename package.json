@@ -33,10 +33,17 @@
       "fritzbox-callmonitor": "callmonitor.js",
       "fritzbox-contact": "contact.js",
       "fritzbox-config": "config.js",
-      "fritzbox-calllist": "calllist.js"
+      "fritzbox-calllist": "calllist.js",
+      "fritzbox-phonebooks": "phonebook.js"
     }
   },
   "author": {
     "name": "Jochen Scheib"
-  }
+  },
+  "contributors": [    
+    {
+      "name": "naimo84",
+      "email": "git@naimo84.dev"
+    }
+  ]
 }

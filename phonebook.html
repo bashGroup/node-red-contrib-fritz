@@ -1,0 +1,117 @@
+<script type="text/javascript">
+  RED.nodes.registerType("fritzbox-phonebook", {
+    category: "fritzbox",
+    paletteLabel: "FRITZ!Box Phonebook",
+    color: "#2E90DD",
+    defaults: {
+      device: {
+        type: "fritzbox-config",
+        required: true
+      },
+      name: {
+        value: "",
+        required: false
+      },
+      id: {
+        value: "0",
+        required: false       
+      },
+      data:{},
+      datatype:{},
+      idtype: {},
+      action: {
+        value: "GetPhonebook"
+      },
+      actiontype: {},
+      listurl: {
+        value: "NewPhonebookURL"
+      }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: "fritz.png",
+    label: function () {
+      return this.name ? this.name : "FRITZ!Box Phonebook";
+    },
+    oneditprepare: function () {
+      var node = this;
+
+      $("#node-input-action").typedInput({
+        typeField: "#node-input-actiontype",
+        default: "action",
+        types: ["str", "msg", {
+          value: "action",
+          options: [
+            { value: "GetPhonebook", label: "Get Phonebook" },
+            { value: "GetPhonebookList", label: "Get Phonebook List" },
+            { value: "SetPhonebookEntryUID", label: "Add Phonebook Entry" }
+          ]
+        }]
+      });
+
+      $("#node-input-id").typedInput({
+        typeField: "#node-input-idtype",
+        types: ["num", "msg"]
+      });
+
+      $("#node-input-data").typedInput({
+        typeField: "#node-input-datatype",
+        types: ["json", "msg"]
+      });
+
+
+      $('#node-input-action').on('change', function (event, type, value) {
+        if (value === 'SetPhonebookEntryUID') {
+          $('#node-input-data').parent().show();
+        } else {
+          $('#node-input-data').parent().hide();
+        }
+      });
+    }
+  });
+</script>
+
+<script type="text/x-red" data-template-name="fritzbox-phonebook">
+  <style>
+    .fritz {
+        display:flex;
+    }
+    .fritz .red-ui-typedInput-container {
+        flex:1
+    }
+    .fritz span {
+        flex:1
+    }
+    .fritz label {
+        min-width: 110px;
+        align-self: center;
+    }  
+    .padding-top {
+        padding-top: 10px;
+    }
+  </style>   
+
+  <div class="form-row fritz">
+    <label for="node-input-device"><i class="fa fa-server"></i> Device</label>
+    <input type="text" id="node-input-device">
+  </div>
+  <div class="form-row fritz">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" />
+  </div>
+  <div class="form-row fritz">
+    <label for="node-input-action"><i class="fa fa-filter"></i> <span>Action</span></label>
+    <input type="text" id="node-input-action">
+    <input type="hidden" id="node-input-actiontype">
+  </div> 
+  <div class="form-row fritz">
+    <label for="node-input-data"><i class="fa fa-filter"></i> <span>Data</span></label>
+    <input type="text" id="node-input-data">
+    <input type="hidden" id="node-input-datatype">
+  </div>
+  <div class="form-row fritz">
+    <label for="node-input-id"><i class="fa fa-tag"></i> <span>Phonebook Id</span></label>
+    <input type="text" id="node-input-id" />
+    <input type="hidden" id="node-input-idtype" />
+  </div> 
+</script>

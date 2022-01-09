@@ -70,7 +70,6 @@ module.exports = function(RED) {
             node.config.removeListener('statusUpdate', node.status);
         });
     }
-    RED.nodes.registerType("fritzbox-calllist", FritzboxList);
-    RED.nodes.registerType("fritzbox-phonebook", FritzboxList);
+    RED.nodes.registerType("fritzbox-calllist", FritzboxList)
 }
 
