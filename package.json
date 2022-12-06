@@ -3,7 +3,7 @@
   "version": "1.4.5",
   "description": "Get full access to all functions of your fritzbox. Including Callmonitor, Presence Detection and much more",
   "dependencies": {
-    "axios": "^0.20.0",
+    "axios": "^1.2.1",
     "fritzbox": "^1.0.0",
     "google-libphonenumber": "^3.2.13",
     "xml2js": "^0.4.23"
