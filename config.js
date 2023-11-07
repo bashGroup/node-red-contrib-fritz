@@ -1,7 +1,68 @@
 var Fritzbox = require("fritzbox")
+var parseStringPromise = require('xml2js').parseStringPromise;
 
 module.exports = function(RED) {
-    function FritzboxConfig(n) {
+
+	RED.httpAdmin.get('/fritzbox/services', function(req, res, next) {
+		var config = {
+			host: req.query.url
+		};
+
+		var fritzbox = new Fritzbox.Fritzbox(config);
+
+		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
+			.then(function() {
+				var services = Object.keys(fritzbox.services);
+				res.end(JSON.stringify(services));
+			}).catch(function(error) {
+				res.status(500);
+				res.end(error.message);
+			});
+	});
+
+	RED.httpAdmin.get('/fritzbox/actions', function(req, res, next) {
+		var service = req.query.service;
+
+		var config = {
+			host: req.query.url
+		};
+
+		var fritzbox = new Fritzbox.Fritzbox(config);
+
+		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
+			.then(function() {
+				var actions = fritzbox.services[service].actionsInfo;
+				res.end(JSON.stringify(actions));
+			}).catch(function(error) {
+				res.status(500);
+				res.end(error.message);
+			});
+	});
+
+	RED.httpAdmin.get('/fritzbox/users', function(req, res, next) {
+		var host = req.query.url;
+
+		var config = {
+			host: host
+		};
+
+		var fritzbox = new Fritzbox.Fritzbox(config);
+
+		fritzbox.initTR064Device().then(function() {
+			return fritzbox.services["urn:dslforum-org:service:LANConfigSecurity:1"].actions["X_AVM-DE_GetUserList"]()
+		}).then(function(result) {
+			return parseStringPromise(result['NewX_AVM-DE_UserList'], {explicitRoot: false, explicitArray: false, ignoreAttrs: true});
+		}).then(function(json) {
+			res.end(JSON.stringify(json));
+		}).catch(function(error) {
+			res.status(500);
+			res.end(error.message);
+		});
+	});
+
+
+
+	function FritzboxConfig(n) {
 		RED.nodes.createNode(this, n);
 		var node = this;
 		node.host = n.host;
@@ -20,8 +81,9 @@ module.exports = function(RED) {
 
 		node.fritzbox = new Fritzbox.Fritzbox(config);
 
-		node.reinit = function() {
-			Promise.all([node.fritzbox.initIGDDevice(), node.fritzbox.initTR064Device()].map(p => p.catch(error => null)))
+		// Initialize fritzbox configuration by gathering services and actions		
+		node.reinit = async function() {
+			await Promise.all([node.fritzbox.initIGDDevice(), node.fritzbox.initTR064Device()])
 			.then(function() {
 					updateStatus("ready");
 				}).catch(function(error) {
