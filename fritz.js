@@ -17,14 +17,14 @@ module.exports = function(RED) {
 				var service = msg.service ? msg.service : node.service;
 				var action = msg.action ? msg.action : node.action;
 				if(action === ""){
-					node.error("No action found. Did you select any?")
+					node.error("No action found. Did you select any?", msg)
 					return;
 				}
 				if(node.config.fritzbox.options.ssl && node.config.fritzbox.options.port == 49000){
 					node.warn("SSL option selected with Standard Port 49000. Should be 49443?");
 				}
 				if(node.config.fritzbox.services[service] === undefined){
-					node.error("No Services response received.");
+					node.error("No Services response received.", msg);
 					return;
 				}
 				node.config.fritzbox.services[service].actions[action](msg.payload)
