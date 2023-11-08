@@ -3,42 +3,6 @@ var Fritzbox = require("fritzbox")
 
 module.exports = function(RED) {
 
-	RED.httpAdmin.get('/fritzbox/services', function(req, res, next) {
-		var url = req.query.url;
-		var config = {
-			host: req.query.url
-		};
-
-		var fritzbox = new Fritzbox.Fritzbox(config);
-
-		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
-			.then(function() {
-				var services = Object.keys(fritzbox.services);
-				res.end(JSON.stringify(services));
-			}).catch(function(error) {
-				res.end();
-			});
-	});
-
-	RED.httpAdmin.get('/fritzbox/actions', function(req, res, next) {
-		var service = req.query.service;
-
-		var config = {
-			host: req.query.url
-		};
-
-		var fritzbox = new Fritzbox.Fritzbox(config);
-
-		Promise.all([fritzbox.initIGDDevice(), fritzbox.initTR064Device()].map(p => p.catch(error => null)))
-			.then(function() {
-				var actions = fritzbox.services[service].actionsInfo;
-				res.end(JSON.stringify(actions));
-			}).catch(function(error) {
-				res.end();
-			});
-	});
-
-
 	function FritzboxIn(n) {
 		RED.nodes.createNode(this,n);
 		var node = this;

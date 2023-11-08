@@ -35,6 +35,35 @@
       return this.name ? this.name : "FRITZ!Box";
     },
     oneditprepare: function () {
+      var node = this;
+
+      if (node.user) {
+        $('#node-config-input-user').append('<option value="' + node.user + '">' + node.user + '</option>').val(
+          node.user);
+      }
+
+      function getUsers() {
+        $.get('fritzbox/users')
+          .done(function (data) {
+            users = JSON.parse(data);
+            console.log(users);
+
+            $('#node-config-input-user').find('option').remove();
+
+            for (user of users.Username) {
+              $('#node-config-input-user').append('<option value="' + user + '">' + user + '</option>');
+            }
+            $('#node-config-input-user').val(node.user);
+          })
+          .fail(function () {
+            RED.notify("Something went wrong. Please retry.", "error");
+          });
+      }
+
+      $('#node-input-getusers').click(function () {
+        getUsers();
+      });
+
       // For backward compatibility
       if ($('#node-config-input-username').val() !== "") {
         $('#node-config-input-user').val($('#node-config-input-username').val())
@@ -77,8 +106,10 @@
       </div>
       <div class="form-row">
           <label for="node-config-input-username"><i class="fa fa-user"></i> Username</label>
-          <input type="text" id="node-config-input-user" />
+          <select id="node-config-input-user" name="node-config-input-user" style="width: 250px;">
+          </select>
           <input type="hidden" id="node-config-input-username"/>
+          <button type="button" id="node-input-getusers" class="red-ui-button"><i class="fa fa-search"></i></button>
       </div>
       <div class="form-row">
           <label for="node-config-input-password"><i class="fa fa-key"></i> Password</label>
