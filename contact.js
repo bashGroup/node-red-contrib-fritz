@@ -113,7 +113,7 @@ module.exports = function(RED) {
           node.send(msg);
         }
       } else {
-        node.error("Device not ready.");
+        node.error("Device not ready.", msg);
         node.config.reinit();
       }
     });
