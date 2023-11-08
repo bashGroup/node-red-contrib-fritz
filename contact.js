@@ -31,53 +31,69 @@ module.exports = function(RED) {
 
     node.config.on('statusUpdate', statusupdate);
 
-    var queryphonebook = function(phonenumber) {
-      return new Promise(function(resolve, reject) {
-        var inNumber;
-        try {
-          inNumber = phoneUtil.parse(phonenumber, node.ccode);
-        } catch(e) {
-          node.warn(`The provided number ${phonenumber} is not valid for region ${node.ccode}: ${e}`);
-          resolve([]);
-        }
-        if(!phoneUtil.isValidNumber(inNumber)) {
-          node.warn(`The provided number ${phonenumber} is not valid for region ${node.ccode}`);
-          resolve([]);
-        }
-
-        node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
-          .then(function(url) {
-            return httpclient.get(url.NewPhonebookURL);
-          }).then(function(result) {
-            return parser.parseStringPromise(result.data)
-          }).then(function(result) {
-            var contacts = [];
-
-            result.phonebook.contact.forEach(function(contact) {
-              function matchNumber(number) {
-                if (number._.startsWith('**')) return;
-                if (number._.includes('@')) return;
-                try {
-                  var numberDE = phoneUtil.parse(number._, node.ccode);
-                  if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
-                    contacts.push(contact);
-                  }
-                } catch(e) {
-                  node.warn(`The invalid phonebook number ${number._} for region ${node.ccode} will be ignored: ${e}`);
-                }
-              };
-
-              if(Array.isArray(contact.telephony.number)) {
-                contact.telephony.number.forEach(matchNumber);
-              } else {
-                matchNumber(contact.telephony.number);
-              }
-            });
-            resolve(contacts);
-          }).catch(function(error) {
-            reject(error);
+    var simpleSearch = function(contacts, number) {
+      var result = [];
+      contacts.forEach(function(contact) {
+        if(Array.isArray(contact.telephony.number)) {
+          contact.telephony.number.forEach(function(number) {
+            if(number._.includes(number)) {
+              result.push(contact);
+            }
           });
+        } else {
+          if(contact.telephony.number._.includes(number)) {
+            result.push(contact);
+          }
+        }
       });
+      return result;
+    }
+
+    var queryphonebook = function(phonenumber) {
+      // Query the phonebook
+      return node.config.fritzbox.services["urn:dslforum-org:service:X_AVM-DE_OnTel:1"].actions.GetPhonebook({'NewPhonebookID': node.phonebook})
+        .then(function(url) {
+          // Follow the phonebook link and parse the XML
+          return httpclient.get(url.NewPhonebookURL);
+        }).then(function(result) {
+          return parser.parseStringPromise(result.data)
+        }).then(function(result) {
+          // Parse the incoming number
+          var inNumber;
+          try {
+            inNumber = phoneUtil.parse(phonenumber, node.ccode);
+          } catch(e) {
+            node.warn(`The provided number ${phonenumber} is not valid for region ${node.ccode}: ${e}`);
+            return [];
+          }
+          if(!phoneUtil.isValidNumber(inNumber)) {
+            return simpleSearch(result.phonebook.contact, phonenumber);
+          }
+
+          // Search the phonebook for the number
+          var contacts = [];
+          result.phonebook.contact.forEach(function(contact) {
+            function matchNumber(number) {
+              if (number._.startsWith('**')) return;
+              if (number._.includes('@')) return;
+              try {
+                var numberDE = phoneUtil.parse(number._, node.ccode);
+                if(phoneUtil.isValidNumber(numberDE) && phoneUtil.isNumberMatch(inNumber, numberDE) === PNU.MatchType.EXACT_MATCH) {
+                  contacts.push(contact);
+                }
+              } catch(e) {
+                node.warn(`The invalid phonebook number ${number._} for region ${node.ccode} will be ignored: ${e}`);
+              }
+            };
+
+            if(Array.isArray(contact.telephony.number)) {
+              contact.telephony.number.forEach(matchNumber);
+            } else {
+              matchNumber(contact.telephony.number);
+            }
+          });
+          return contacts;
+        })
     };
 
     node.on('input', function(msg) {
